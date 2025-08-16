@@ -10,6 +10,96 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  first_name  String
+  middle_name String?
+  last_name   String
+  email       String   @unique
+  password    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  ownedBoards Board[]       @relation("BoardOwner") // <-- relation to boards owned by this user
+  boards      Board[]       @relation("BoardMembers") // <-- relation to boards they are a member of
+  activities  ActivityLog[]
+  cards       Card[]
+}
+
+model Board {
+  id      String @id @default(cuid())
+  title   String
+  ownerId String
+
+  // Relations
+  owner      User          @relation("BoardOwner", fields: [ownerId], references: [id])
+  members    User[]        @relation("BoardMembers")
+  activities ActivityLog[]
+  lists      List[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Card
+model Card {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  assigneeId  String
+  listId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [assigneeId], references: [id])
+  list List @relation(fields: [listId], references: [id])
+}
+
+// List 
+model List {
+  id        String   @id @default(cuid())
+  title     String
+  boardId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations 
+  cards Card[]
+  board Board  @relation(fields: [boardId], references: [id])
+}
+
+// Activity Log
+model ActivityLog {
+  id      String         @id @default(uuid())
+  action  ActivityAction
+  details Json? // flexible field for extra info (oldName, newName, fromList, toList, etc.)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  boardId String?
+  board   Board?  @relation(fields: [boardId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ActivityAction {
+  CARD_CREATED
+  CARD_UPDATED
+  CARD_MOVED
+  CARD_DELETED
+
+  BOARD_CREATED
+  BOARD_UPDATED
+  BOARD_DELETED
+
+  COMMENT_ADDED
+  COMMENT_DELETED
 }
