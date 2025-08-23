@@ -29,6 +29,7 @@ model User {
   boards      Board[]       @relation("BoardMembers") // <-- relation to boards they are a member of
   activities  ActivityLog[]
   cards       Card[]
+  comments    Comment[]
 }
 
 model Board {
@@ -57,8 +58,9 @@ model Card {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  user User @relation(fields: [assigneeId], references: [id])
-  list List @relation(fields: [listId], references: [id])
+  user     User      @relation(fields: [assigneeId], references: [id])
+  list     List      @relation(fields: [listId], references: [id])
+  comments Comment[]
 }
 
 // List 
@@ -72,6 +74,20 @@ model List {
   // Relations 
   cards Card[]
   board Board  @relation(fields: [boardId], references: [id])
+}
+
+//Comments
+model Comment {
+  id          String   @id @default(uuid())
+  userId      String
+  cardId      String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  card Card @relation(fields: [cardId], references: [id])
 }
 
 // Activity Log
