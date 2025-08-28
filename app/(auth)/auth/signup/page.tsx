@@ -21,7 +21,7 @@ const page = () => {
             </Link>
           </div>
         </div>
-        <form className="space-y-4 px-4 py-6 rounded">
+        <form className="space-y-4 px-2 md:px-4 py-6 rounded">
           <div className="grid w-full items-center gap-3">
             <Label htmlFor="first_name">First Name</Label>
             <Input type="first_name" id="first_name" placeholder="First name" />
