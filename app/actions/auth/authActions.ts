@@ -21,7 +21,10 @@ export async function signupAction(formData: FormData) {
     // Check if email already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return { success: false, error: { email: ["Email already in use"] } };
+      return {
+        success: false,
+        error: { email: ["Email already in use", "Use different email"] },
+      };
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

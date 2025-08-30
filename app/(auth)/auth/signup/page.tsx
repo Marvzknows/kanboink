@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SignupInput, signupSchema } from "@/app/schemas/authSchema";
 import { signupAction } from "@/app/actions/auth/authActions";
+import { toast } from "sonner";
 
 const page = () => {
   const {
@@ -21,12 +22,38 @@ const page = () => {
   });
 
   const onSubmit = async (data: SignupInput) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) =>
-      formData.append(key, value as string)
-    );
-    const response = await signupAction(formData);
-    console.log("Server action response: ", response);
+    try {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) =>
+        formData.append(key, value as string)
+      );
+
+      const response = await signupAction(formData);
+
+      if (!response.success) {
+        // Handle field-specific or general errors
+        if (response.error) {
+          Object.entries(response.error).forEach(([field, messages]) => {
+            if (Array.isArray(messages)) {
+              messages.forEach((msg) =>
+                toast.error(msg, { description: `Error in ${field}` })
+              );
+            } else {
+              toast.error(String(messages));
+            }
+          });
+        } else {
+          toast.error("Something went wrong. Please try again.");
+        }
+        return;
+      }
+
+      toast.success("Account created successfully!", {
+        description: "You can now sign in with your new account.",
+      });
+    } catch (error) {
+      toast.error("Unexpected error occurred. Please try again later.");
+    }
   };
 
   return (
