@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SignupInput, signupSchema } from "@/app/schemas/authSchema";
+import { signupAction } from "@/app/actions/auth/authActions";
 
 const page = () => {
   const {
@@ -19,8 +20,13 @@ const page = () => {
     resolver: zodResolver(signupSchema),
   });
 
-  const onSubmit = (data: SignupInput) => {
-    console.log("data: ", data);
+  const onSubmit = async (data: SignupInput) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) =>
+      formData.append(key, value as string)
+    );
+    const response = await signupAction(formData);
+    console.log("Server action response: ", response);
   };
 
   return (
