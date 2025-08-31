@@ -1,7 +1,10 @@
+"use client";
+
 import * as React from "react";
 import { Home, FolderKanban, Settings } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-import { SearchForm } from "@/components/search-form";
 import { VersionSwitcher } from "@/components/version-switcher";
 import {
   Sidebar,
@@ -16,28 +19,25 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-// Updated sample data with icons
 const data = {
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: [
     {
-      title: "Getting Started",
-      url: "#",
+      title: "Menu",
       items: [
         {
-          title: "Overview",
-          url: "#",
-          isActive: true,
+          title: "Dashboard",
+          url: "/dashboard",
           icon: Home,
         },
         {
           title: "Projects",
-          url: "#",
+          url: "/projects",
           icon: FolderKanban,
         },
         {
           title: "Account settings",
-          url: "#",
+          url: "/account",
           icon: Settings,
         },
       ],
@@ -46,6 +46,8 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -60,16 +62,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
-                      <a href={item.url} className="flex items-center gap-2">
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {group.items.map((item) => {
+                  const isActive = pathname === item.url;
+
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <Link
+                          href={item.url}
+                          className="flex items-center gap-2"
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
