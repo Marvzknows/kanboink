@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { ModeToggle } from "@/components/ModeToggle";
 
 export default function DashboardLayout({
   children,
@@ -76,10 +77,13 @@ export default function DashboardLayout({
             </BreadcrumbList>
           </Breadcrumb>
 
-          <Button className="ml-auto" variant="ghost">
-            <LogOut />
-            Logout
-          </Button>
+          <div className="ml-auto">
+            <ModeToggle />
+            <Button className="ml-auto" variant="ghost">
+              <LogOut />
+              Logout
+            </Button>
+          </div>
         </header>
 
         {/* Page Content */}
