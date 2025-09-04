@@ -47,3 +47,5 @@ export async function signupAction(formData: FormData) {
     return { success: false, error: { general: ["Something went wrong"] } };
   }
 }
+
+export async function signinAction() {}
