@@ -8,7 +8,6 @@ import {
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import jwt from "jsonwebtoken";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "";
@@ -75,6 +74,8 @@ export async function signinAction(data: SignInInput) {
         id: true,
         email: true,
         password: true,
+        first_name: true,
+        last_name: true,
       },
     });
 
@@ -97,6 +98,16 @@ export async function signinAction(data: SignInInput) {
         error: "Invalid email or password",
       };
     }
+
+    // Clean up old refresh tokens for this user
+    await prisma.refreshToken.deleteMany({
+      where: {
+        userId: user.id,
+        expiresAt: {
+          lt: new Date(), // Delete expired tokens
+        },
+      },
+    });
 
     // Generate JWT access token
     const accessToken = jwt.sign(
@@ -122,34 +133,48 @@ export async function signinAction(data: SignInInput) {
     );
 
     // Store refresh token in database
-    await prisma.refreshToken.create({
-      data: {
-        token: refreshToken,
-        userId: user.id,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      },
-    });
+    try {
+      await prisma.refreshToken.create({
+        data: {
+          token: refreshToken,
+          userId: user.id,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        },
+      });
+    } catch (dbError) {
+      return {
+        success: false,
+        error: "Database error creating refresh token",
+      };
+    }
 
     // Set HTTP-only cookies
     const cookieStore = await cookies();
 
-    // Access token cookie (shorter expiration)
-    cookieStore.set("access_token", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 15 * 60, // 15 minutes in seconds
-      path: "/",
-    });
+    try {
+      // Access token cookie (shorter expiration)
+      cookieStore.set("access_token", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60, // 15 minutes in seconds
+        path: "/",
+      });
 
-    // Refresh token cookie (longer expiration)
-    cookieStore.set("refresh_token", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      path: "/",
-    });
+      // Refresh token cookie (longer expiration)
+      cookieStore.set("refresh_token", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+        path: "/",
+      });
+    } catch (cookieError) {
+      return {
+        success: false,
+        error: "Cookie setting error: " + cookieError,
+      };
+    }
 
     return {
       success: true,
@@ -157,14 +182,29 @@ export async function signinAction(data: SignInInput) {
       user: {
         id: user.id,
         email: user.email,
+        name: `${user.first_name} ${user.last_name}`.trim(),
       },
-      access_token: accessToken,
-      refresh_token: refreshToken,
     };
   } catch (error) {
+    // Handle specific error types
+    if (error instanceof Error) {
+      if (error.message.includes("P2000")) {
+        return {
+          success: false,
+          error: "Database constraint violation. Please contact support.",
+        };
+      }
+      if (error.message.includes("P2002")) {
+        return {
+          success: false,
+          error: "A user with this information already exists.",
+        };
+      }
+    }
+
     return {
       success: false,
-      error: "An error occurred during sign in",
+      error: "An error occurred during sign in. Please try again.",
     };
   }
 }
@@ -182,12 +222,20 @@ export async function refreshAccessToken() {
     }
 
     // Verify refresh token
-    const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as {
-      userId: string;
-    };
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as {
+        userId: string;
+      };
+    } catch (jwtError) {
+      return {
+        success: false,
+        error: "Invalid refresh token",
+      };
+    }
 
     // Check if refresh token exists in database and is valid
-    const storedToken = await prisma.refreshToken.findUnique({
+    const storedToken = await prisma.refreshToken.findFirst({
       where: {
         token: refreshToken,
       },
@@ -196,12 +244,21 @@ export async function refreshAccessToken() {
           select: {
             id: true,
             email: true,
+            first_name: true,
+            last_name: true,
           },
         },
       },
     });
 
     if (!storedToken || storedToken.expiresAt < new Date()) {
+      // Clean up expired token
+      if (storedToken) {
+        await prisma.refreshToken.delete({
+          where: { id: storedToken.id },
+        });
+      }
+
       return {
         success: false,
         error: "Invalid or expired refresh token",
@@ -231,13 +288,52 @@ export async function refreshAccessToken() {
 
     return {
       success: true,
-      user: storedToken.user,
+      user: {
+        id: storedToken.user.id,
+        email: storedToken.user.email,
+        name: `${storedToken.user.first_name} ${storedToken.user.last_name}`.trim(),
+      },
     };
   } catch (error) {
-    console.error("Token refresh error:", error);
     return {
       success: false,
       error: "Failed to refresh token",
+    };
+  }
+}
+
+export async function signoutAction() {
+  try {
+    const cookieStore = await cookies();
+    const refreshToken = cookieStore.get("refresh_token")?.value;
+
+    // Remove refresh token from database if it exists
+    if (refreshToken) {
+      try {
+        await prisma.refreshToken.deleteMany({
+          where: {
+            token: refreshToken,
+          },
+        });
+      } catch (dbError) {
+        console.error("Error deleting refresh token from database:", dbError);
+        // Continue with signout even if database deletion fails
+      }
+    }
+
+    // Clear cookies
+    cookieStore.delete("access_token");
+    cookieStore.delete("refresh_token");
+
+    return {
+      success: true,
+      message: "Signed out successfully",
+    };
+  } catch (error) {
+    console.error("Signout error:", error);
+    return {
+      success: false,
+      error: "An error occurred during sign out",
     };
   }
 }
