@@ -1,15 +1,33 @@
+"use client";
+
 import React from "react";
 import { GalleryVerticalEnd } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { SignInInput, signInSchema } from "@/app/schemas/authSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const page = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInInput>({
+    resolver: zodResolver(signInSchema),
+  });
+
+  const onSubmit = async () => {
+    toast.success("Logged in");
+  };
+
   return (
     <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="w-full max-w-sm">
-        <form>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-6">
             <div className="flex flex-col items-center gap-2">
               <div className="flex size-8 items-center justify-center rounded-md">
@@ -31,12 +49,29 @@ const page = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
-                  type="email"
+                  {...register("email")}
                   placeholder="m@example.com"
-                  required
                 />
+                {errors.email?.message && (
+                  <p className="text-red-500 font-semibold text-xs">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
-              <Button type="submit" className="w-full">
+              <div className="grid gap-3">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  {...register("password")}
+                />
+                {errors.password?.message && (
+                  <p className="text-red-500 font-semibold text-xs">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+              <Button disabled={isSubmitting} type="submit" className="w-full">
                 Login
               </Button>
             </div>
