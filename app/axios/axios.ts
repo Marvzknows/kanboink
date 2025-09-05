@@ -1,4 +1,3 @@
-// lib/axios.ts
 import axios from "axios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -8,20 +7,14 @@ const axiosInstance = axios.create({
   headers: {
     Accept: "application/json",
   },
+  withCredentials: true, // This is crucial for cookie-based auth
 });
 
-// Request interceptor
+// Request interceptor (simplified for cookie-based auth)
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers = config.headers ?? {};
-      config.headers.Authorization = `Bearer ${token}`;
-    } else {
-      if (config.headers) {
-        delete config.headers.Authorization;
-      }
-    }
+    // No need to manually set Authorization header
+    // Cookies will be sent automatically with withCredentials: true
     return config;
   },
   (error) => Promise.reject(error)
@@ -33,7 +26,8 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       if (error.response.data?.message === "Unauthenticated.") {
-        localStorage.clear();
+        // For cookie-based auth, you might want to call a logout endpoint
+        // to clear the httpOnly cookie, or just redirect
         window.location.href = "/auth/signin";
       }
     }
