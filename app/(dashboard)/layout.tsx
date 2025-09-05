@@ -20,12 +20,15 @@ import { LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ModeToggle } from "@/components/ModeToggle";
+import { useMe } from "../(auth)/_hooks/useMe";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { data, isLoading, isError, error } = useMe();
+
   const pathname = usePathname();
 
   // split pathname: "/projects" -> ["projects"]
