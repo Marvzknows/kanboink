@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import { AddNewTaskDialog } from "./_components/AddNewTaskDialog";
 import { AddNewProjectDialog } from "./_components/AddNewProjectDialog";
+import { AddNewListDialog } from "./_components/AddNewListDialog";
 
 const mockData = [
   {
@@ -49,6 +50,7 @@ const ProjectsPage = () => {
         <div className="space-x-1.5">
           <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
           <AddNewProjectDialog />
+          <AddNewListDialog />
         </div>
       </div>
 
