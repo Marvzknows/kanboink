@@ -78,7 +78,11 @@ export function AddNewTaskDialog({ onTaskAdd }: AddNewTaskDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="shadow-sm">
+        <Button
+          size={"sm"}
+          variant="secondary"
+          className="shadow-sm rounded text-xs"
+        >
           Add New Task
         </Button>
       </DialogTrigger>
