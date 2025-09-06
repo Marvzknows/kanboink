@@ -7,7 +7,7 @@ const REFRESH_SECRET = new TextEncoder().encode(
   process.env.JWT_REFRESH_SECRET || ""
 );
 
-const ACCESS_TOKEN_EXPIRES_IN = "15m";
+const ACCESS_TOKEN_EXPIRES_IN = "10s";
 const REFRESH_TOKEN_EXPIRES_IN = "7d";
 
 export type JWTPayloadT = {

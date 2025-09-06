@@ -7,30 +7,59 @@ const axiosInstance = axios.create({
   headers: {
     Accept: "application/json",
   },
-  withCredentials: true, // This is crucial for cookie-based auth
+  withCredentials: true,
 });
 
-// Request interceptor (simplified for cookie-based auth)
-axiosInstance.interceptors.request.use(
-  (config) => {
-    // No need to manually set Authorization header
-    // Cookies will be sent automatically with withCredentials: true
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+let isRefreshing = false;
+let failedQueue: any[] = [];
 
-// Response interceptor
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      if (error.response.data?.message === "Unauthenticated.") {
-        // For cookie-based auth, you might want to call a logout endpoint
-        // to clear the httpOnly cookie, or just redirect
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If unauthorized
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => axiosInstance(originalRequest))
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        await axios.post(
+          `${BASE_URL}/auth/refreshToken`,
+          {},
+          { withCredentials: true }
+        );
+
+        processQueue(null);
+        return axiosInstance(originalRequest);
+      } catch (err) {
+        processQueue(err, null);
         window.location.href = "/auth/signin";
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
       }
     }
+
     return Promise.reject(error);
   }
 );

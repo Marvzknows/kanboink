@@ -14,10 +14,13 @@ export const GET = async (req: NextRequest) => {
     const token = req.cookies.get("access_token")?.value || null;
 
     if (!token) {
-      return NextResponse.json({
-        success: false,
-        error: "No token provided, Unauthenticated",
-      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No token provided, Unauthenticated",
+        },
+        { status: 401 }
+      );
     }
 
     //verify token
@@ -33,11 +36,14 @@ export const GET = async (req: NextRequest) => {
     try {
       decoded = jwt.verify(token, JWT_ACCESS_SECRET) as JWTPayload;
     } catch (jwtError) {
-      return NextResponse.json({
-        success: false,
-        error: "Invalid token",
-        message: "Unauthenticated.",
-      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid token",
+          message: "Unauthenticated.",
+        },
+        { status: 401 }
+      );
     }
 
     // find user in database
