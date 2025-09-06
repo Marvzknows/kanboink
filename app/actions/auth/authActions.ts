@@ -8,13 +8,11 @@ import {
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
-
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "";
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "";
-// Token expiration times
-const ACCESS_TOKEN_EXPIRES_IN = "15m"; // 15 minutes
-const REFRESH_TOKEN_EXPIRES_IN = "7d"; // 7 days
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "@/lib/jwt";
 
 export async function signupAction(formData: FormData) {
   try {
@@ -56,6 +54,7 @@ export async function signupAction(formData: FormData) {
       message: "Account successfully created",
     };
   } catch (err) {
+    console.error(err);
     return { success: false, error: { general: ["Something went wrong"] } };
   }
 }
@@ -110,27 +109,16 @@ export async function signinAction(data: SignInInput) {
     });
 
     // Generate JWT access token
-    const accessToken = jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-      },
-      JWT_ACCESS_SECRET,
-      {
-        expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-      }
-    );
+    const accessToken = await generateAccessToken({
+      userId: user.id,
+      email: user.email,
+    });
 
     // Generate refresh token
-    const refreshToken = jwt.sign(
-      {
-        userId: user.id,
-      },
-      JWT_REFRESH_SECRET,
-      {
-        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-      }
-    );
+    const refreshToken = await generateRefreshToken({
+      userId: user.id,
+      email: user.email,
+    });
 
     // Store refresh token in database
     try {
@@ -144,7 +132,7 @@ export async function signinAction(data: SignInInput) {
     } catch (dbError) {
       return {
         success: false,
-        error: "Database error creating refresh token",
+        error: "Database error creating refresh token, " + dbError,
       };
     }
 
@@ -222,16 +210,9 @@ export async function refreshAccessToken() {
     }
 
     // Verify refresh token
-    let decoded;
-    try {
-      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as {
-        userId: string;
-      };
-    } catch (jwtError) {
-      return {
-        success: false,
-        error: "Invalid refresh token",
-      };
+    const decoded = await verifyRefreshToken(refreshToken);
+    if (!decoded) {
+      return { success: false, error: "Invalid refresh token" };
     }
 
     // Check if refresh token exists in database and is valid
@@ -266,16 +247,10 @@ export async function refreshAccessToken() {
     }
 
     // Generate new access token
-    const newAccessToken = jwt.sign(
-      {
-        userId: storedToken.user.id,
-        email: storedToken.user.email,
-      },
-      JWT_ACCESS_SECRET,
-      {
-        expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-      }
-    );
+    const newAccessToken = await generateAccessToken({
+      userId: storedToken.user.id,
+      email: storedToken.user.email,
+    });
 
     // Set new access token cookie
     cookieStore.set("access_token", newAccessToken, {
@@ -297,7 +272,7 @@ export async function refreshAccessToken() {
   } catch (error) {
     return {
       success: false,
-      error: "Failed to refresh token",
+      error: "Failed to refresh token, " + error,
     };
   }
 }
