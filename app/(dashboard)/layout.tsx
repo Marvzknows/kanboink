@@ -21,13 +21,29 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ModeToggle } from "@/components/ModeToggle";
 import { useMe } from "../(auth)/_hooks/useMe";
+import { useContext, useEffect } from "react";
+import { AuthContext } from "@/context/AuthContext";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { data, isLoading, isError, error } = useMe();
+  const { data } = useMe();
+  const { setUserAuth } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (data?.data) {
+      setUserAuth({
+        id: data?.data.id,
+        first_name: data?.data.first_name,
+        middle_name: data?.data.middle_name || "",
+        last_name: data?.data.last_name,
+        email: data?.data.email,
+        createdAt: data?.data.createdAt,
+      });
+    }
+  }, [data, setUserAuth]);
 
   const pathname = usePathname();
 

@@ -11,8 +11,8 @@ export type UserDataT = {
   last_name: string;
   full_name: string;
   email: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   ownedBoards: OwnedBoardsT[];
   memberBoards: MemberBoardsT[];
   stats: {
@@ -26,15 +26,15 @@ export type UserDataT = {
 export type OwnedBoardsT = {
   id: string;
   title: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   ownerId: string;
 };
 
 export type MemberBoardsT = {
   id: string;
   title: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   ownerId: string;
 };
