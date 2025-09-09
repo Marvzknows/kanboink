@@ -30,7 +30,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { data } = useMe();
-  const { setUserAuth } = useContext(AuthContext);
+  const { setUserAuth, loadingLogout, logout } = useContext(AuthContext);
 
   useEffect(() => {
     if (data?.data) {
@@ -98,9 +98,13 @@ export default function DashboardLayout({
 
           <div className="ml-auto">
             <ModeToggle />
-            <Button className="ml-auto" variant="ghost">
+            <Button
+              onClick={() => logout()}
+              className="ml-auto"
+              variant="ghost"
+            >
               <LogOut />
-              Logout
+              {loadingLogout ? "Logging out..." : "Logout"}
             </Button>
           </div>
         </header>
