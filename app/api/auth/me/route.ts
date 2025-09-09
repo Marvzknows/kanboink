@@ -1,56 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
-
-type JWTPayload = {
-  userId: string;
-  email: string;
-  iat?: number;
-  exp?: number;
-};
+import { getUserFromRequest } from "@/lib/jwt";
+import { JWTPayloadT } from "@/lib/jwt";
 
 export const GET = async (req: NextRequest) => {
   try {
-    const token = req.cookies.get("access_token")?.value || null;
-
-    if (!token) {
+    const payload = (await getUserFromRequest(req)) as JWTPayloadT | null;
+    if (!payload) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "No token provided, Unauthenticated",
-        },
+        { success: false, error: "Unauthenticated" },
         { status: 401 }
       );
     }
-
-    //verify token
-    const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
-    if (!JWT_ACCESS_SECRET) {
-      return NextResponse.json({
-        success: false,
-        error: "Server configuration error",
-      });
-    }
-
-    let decoded: JWTPayload;
-    try {
-      decoded = jwt.verify(token, JWT_ACCESS_SECRET) as JWTPayload;
-    } catch (jwtError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid token",
-          message: "Unauthenticated.",
-        },
-        { status: 401 }
-      );
-    }
-
     // find user in database
     const user = await prisma.user.findUnique({
-      where: {
-        id: decoded.userId,
-      },
+      where: { id: payload.userId },
       select: {
         id: true,
         first_name: true,
@@ -76,12 +40,13 @@ export const GET = async (req: NextRequest) => {
     });
 
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        error: "User not found",
-      });
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
     }
 
+    // construct response
     const userData = {
       id: user.id,
       first_name: user.first_name,
@@ -110,6 +75,7 @@ export const GET = async (req: NextRequest) => {
       { status: 200 }
     );
   } catch (error) {
+    console.error(error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
