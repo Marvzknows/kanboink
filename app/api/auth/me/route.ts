@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/jwt";
-import { JWTPayloadT } from "@/lib/jwt";
 
 export const GET = async (req: NextRequest) => {
   try {
-    const payload = (await getUserFromRequest(req)) as JWTPayloadT | null;
+    const payload = await getUserFromRequest(req);
     if (!payload) {
       return NextResponse.json(
         { success: false, error: "Unauthenticated" },
