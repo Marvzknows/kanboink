@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { AddNewTaskDialog } from "./_components/AddNewTaskDialog";
 import { AddNewProjectDialog } from "./_components/AddNewProjectDialog";
 import { AddNewListDialog } from "./_components/AddNewListDialog";
+import { useState } from "react";
+import { useCreateBoard } from "./hooks";
 
 const mockData = [
   {
@@ -33,6 +35,11 @@ const mockData = [
 ];
 
 const ProjectsPage = () => {
+  const [title, setTitle] = useState("");
+  const [openProject, setOpenProject] = useState(false);
+
+  const { mutate: createBoard, isPending } = useCreateBoard();
+
   const handleTaskAdd = (task: {
     title: string;
     description?: string;
@@ -42,6 +49,18 @@ const ProjectsPage = () => {
     console.log("Adding task:", task);
   };
 
+  const onSubmitProject = () => {
+    createBoard(
+      { title },
+      {
+        onSuccess: () => {
+          setOpenProject(false);
+          setTitle("");
+        },
+      }
+    );
+  };
+
   return (
     <div className="p-4 h-full flex flex-col">
       {/* Header */}
@@ -49,7 +68,14 @@ const ProjectsPage = () => {
         <h2 className="font-bold text-2xl">Project Name</h2>
         <div className="space-x-1.5">
           <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
-          <AddNewProjectDialog />
+          <AddNewProjectDialog
+            isOpen={openProject}
+            setIsOpen={setOpenProject}
+            title={title}
+            setTitle={setTitle}
+            onSubmit={onSubmitProject}
+            isLoading={isPending}
+          />
           <AddNewListDialog />
         </div>
       </div>

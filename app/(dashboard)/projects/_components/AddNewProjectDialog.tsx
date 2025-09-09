@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,10 +14,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
-export function AddNewProjectDialog() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [title, setTitle] = useState("");
+type Props = {
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  title: string;
+  setTitle: React.Dispatch<React.SetStateAction<string>>;
+  onSubmit: () => void;
+  isLoading: boolean;
+};
 
+export function AddNewProjectDialog({
+  isOpen,
+  setIsOpen,
+  title,
+  setTitle,
+  onSubmit,
+  isLoading,
+}: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -67,10 +79,21 @@ export function AddNewProjectDialog() {
         <Separator />
 
         <DialogFooter className="gap-2 sm:gap-2">
-          <Button variant="outline" className="flex-1 sm:flex-none">
+          <Button
+            onClick={() => setIsOpen(false)}
+            disabled={isLoading}
+            variant="outline"
+            className="flex-1 sm:flex-none"
+          >
             Cancel
           </Button>
-          <Button className="flex-1 sm:flex-none shadow-sm">Create</Button>
+          <Button
+            disabled={isLoading}
+            onClick={onSubmit}
+            className="flex-1 sm:flex-none shadow-sm"
+          >
+            {isLoading ? "Creating..." : "Create"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
