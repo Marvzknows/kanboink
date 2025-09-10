@@ -1,14 +1,13 @@
-import { useMutation } from "@tanstack/react-query";
 import { CreateBoardApi } from "@/app/(apiFn)/boardsApi";
+import { useMutation } from "@tanstack/react-query";
 
-type CreateBoardPayloadT = {
-  title: string;
-};
-
-export const useCreateBoard = () => {
-  return useMutation({
-    mutationFn: async (title: CreateBoardPayloadT) => {
-      return await CreateBoardApi(title);
+export const useBoards = () => {
+  // POST: Crete new Board
+  const createBoardMutation = useMutation({
+    mutationFn: async (title: string) => {
+      return await CreateBoardApi({ title });
     },
   });
+
+  return { createBoardMutation };
 };

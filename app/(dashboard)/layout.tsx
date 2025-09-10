@@ -23,6 +23,7 @@ import { ModeToggle } from "@/components/ModeToggle";
 import { useMe } from "../(auth)/_hooks/useMe";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "@/context/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function DashboardLayout({
   children,
@@ -112,6 +113,7 @@ export default function DashboardLayout({
         {/* Page Content */}
         <div className="flex-1 flex flex-col mx-auto w-full">{children}</div>
       </SidebarInset>
+      <Toaster richColors position="top-right" />
     </SidebarProvider>
   );
 }

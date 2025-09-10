@@ -6,7 +6,9 @@ import { AddNewTaskDialog } from "./_components/AddNewTaskDialog";
 import { AddNewProjectDialog } from "./_components/AddNewProjectDialog";
 import { AddNewListDialog } from "./_components/AddNewListDialog";
 import { useState } from "react";
-import { useCreateBoard } from "./hooks";
+import { useBoards } from "./hooks";
+import { AxiosErrorType, handleApiError } from "@/app/axios/axios-error";
+import { toast } from "sonner";
 
 const mockData = [
   {
@@ -38,7 +40,8 @@ const ProjectsPage = () => {
   const [title, setTitle] = useState("");
   const [openProject, setOpenProject] = useState(false);
 
-  const { mutate: createBoard, isPending } = useCreateBoard();
+  const { createBoardMutation } = useBoards();
+  const { mutateAsync: createBoardAction, isPending } = createBoardMutation;
 
   const handleTaskAdd = (task: {
     title: string;
@@ -49,16 +52,18 @@ const ProjectsPage = () => {
     console.log("Adding task:", task);
   };
 
-  const onSubmitProject = () => {
-    createBoard(
-      { title },
-      {
+  const onSubmitProject = async () => {
+    try {
+      await createBoardAction(title, {
         onSuccess: () => {
-          setOpenProject(false);
+          toast.success("Board created successfully!");
           setTitle("");
+          setOpenProject(false);
         },
-      }
-    );
+      });
+    } catch (err) {
+      handleApiError(err as AxiosErrorType);
+    }
   };
 
   return (
