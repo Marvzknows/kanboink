@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { AddNewTaskDialog } from "./_components/AddNewTaskDialog";
 import { AddNewProjectDialog } from "./_components/AddNewProjectDialog";
 import { AddNewListDialog } from "./_components/AddNewListDialog";
-import { SetStateAction, useState } from "react";
+import { useState } from "react";
 import { useBoards } from "./hooks";
 import { AxiosErrorType, handleApiError } from "@/app/axios/axios-error";
 import { toast } from "sonner";
