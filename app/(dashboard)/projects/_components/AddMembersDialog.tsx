@@ -28,6 +28,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useState } from "react";
+import { useBoards } from "../hooks";
 
 type Props = {
   isOpen: boolean;
@@ -37,6 +38,20 @@ type Props = {
 export function AddMembersDialog({ isOpen, setIsOpen }: Props) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+
+  const [tableParams, setTableParams] = useState({
+    page: 1,
+    limit: 10,
+    search: "",
+  });
+
+  const { useUserList } = useBoards();
+  const { data } = useUserList({
+    search: tableParams.search,
+    page: tableParams.page,
+    limit: tableParams.limit,
+    enabled: isOpen,
+  });
 
   const frameworks = [
     {
