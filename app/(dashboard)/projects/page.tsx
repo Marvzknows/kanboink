@@ -5,10 +5,11 @@ import { format } from "date-fns";
 import { AddNewTaskDialog } from "./_components/AddNewTaskDialog";
 import { AddNewProjectDialog } from "./_components/AddNewProjectDialog";
 import { AddNewListDialog } from "./_components/AddNewListDialog";
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
 import { useBoards } from "./hooks";
 import { AxiosErrorType, handleApiError } from "@/app/axios/axios-error";
 import { toast } from "sonner";
+import { AddMembersDialog } from "./_components/AddMembersDialog";
 
 const mockData = [
   {
@@ -39,6 +40,7 @@ const mockData = [
 const ProjectsPage = () => {
   const [title, setTitle] = useState("");
   const [openProject, setOpenProject] = useState(false);
+  const [openMember, setOpenMember] = useState(false);
 
   const { createBoardMutation } = useBoards();
   const { mutateAsync: createBoardAction, isPending } = createBoardMutation;
@@ -72,6 +74,7 @@ const ProjectsPage = () => {
       <div className="flex items-center justify-between mb-6 shrink-0">
         <h2 className="font-bold text-2xl">Project Name</h2>
         <div className="space-x-1.5">
+          <AddMembersDialog isOpen={openMember} setIsOpen={setOpenMember} />
           <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
           <AddNewProjectDialog
             isOpen={openProject}
