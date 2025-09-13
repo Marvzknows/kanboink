@@ -41,7 +41,7 @@ export function AddMembersDialog({ isOpen, setIsOpen }: Props) {
   const [search, setSearch] = useState("");
   const [tableParams] = useState({
     page: 1,
-    limit: 2,
+    limit: 5,
   });
 
   const { useUserList } = useBoards();

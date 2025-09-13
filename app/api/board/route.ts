@@ -2,6 +2,7 @@ import { getUserFromRequest } from "@/lib/jwt";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
+// Create Board
 export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
@@ -86,6 +87,7 @@ export const POST = async (req: NextRequest) => {
   }
 };
 
+// Get Board list (Paaginated)
 export const GET = async (req: NextRequest) => {
   try {
     const user = await getUserFromRequest(req);
