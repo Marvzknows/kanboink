@@ -38,43 +38,31 @@ type Props = {
 export function AddMembersDialog({ isOpen, setIsOpen }: Props) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-
-  const [tableParams, setTableParams] = useState({
+  const [search, setSearch] = useState("");
+  const [tableParams] = useState({
     page: 1,
-    limit: 10,
-    search: "",
+    limit: 2,
   });
 
   const { useUserList } = useBoards();
   const { data } = useUserList({
-    search: tableParams.search,
+    search: search,
     page: tableParams.page,
     limit: tableParams.limit,
     enabled: isOpen,
   });
 
-  const frameworks = [
-    {
-      value: "next.js",
-      label: "Next.js",
-    },
-    {
-      value: "sveltekit",
-      label: "SvelteKit",
-    },
-    {
-      value: "nuxt.js",
-      label: "Nuxt.js",
-    },
-    {
-      value: "remix",
-      label: "Remix",
-    },
-    {
-      value: "astro",
-      label: "Astro",
-    },
-  ];
+  const displaySelectedName = (value: string) => {
+    const user = data?.data.users.find((user) => user.id === value);
+    if (!user) {
+      return "No user Found";
+    }
+
+    return `${user.first_name} ${user.middle_name || ""} ${user.last_name}`
+      .trim()
+      .replace(/\s+/g, " ");
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -111,26 +99,24 @@ export function AddMembersDialog({ isOpen, setIsOpen }: Props) {
                   aria-expanded={open}
                   className="justify-between"
                 >
-                  {value
-                    ? frameworks.find((framework) => framework.value === value)
-                        ?.label
-                    : "Select framework..."}
+                  {value ? displaySelectedName(value) : "Select user..."}
                   <ChevronsUpDown className="opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0">
-                <Command>
+              <PopoverContent className="w-[250px] p-0">
+                <Command shouldFilter={false}>
                   <CommandInput
-                    placeholder="Search framework..."
+                    placeholder="Search user..."
                     className="h-9"
+                    onValueChange={setSearch} // Update search state directly
                   />
                   <CommandList>
-                    <CommandEmpty>No framework found.</CommandEmpty>
+                    <CommandEmpty>No user found.</CommandEmpty>
                     <CommandGroup>
-                      {frameworks.map((framework) => (
+                      {data?.data.users?.map((user) => (
                         <CommandItem
-                          key={framework.value}
-                          value={framework.value}
+                          key={user.id}
+                          value={user.id}
                           onSelect={(currentValue) => {
                             setValue(
                               currentValue === value ? "" : currentValue
@@ -138,13 +124,11 @@ export function AddMembersDialog({ isOpen, setIsOpen }: Props) {
                             setOpen(false);
                           }}
                         >
-                          {framework.label}
+                          {user.first_name} {user.last_name}
                           <Check
                             className={cn(
                               "ml-auto",
-                              value === framework.value
-                                ? "opacity-100"
-                                : "opacity-0"
+                              value === user.id ? "opacity-100" : "opacity-0"
                             )}
                           />
                         </CommandItem>
