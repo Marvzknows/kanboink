@@ -20,6 +20,14 @@ export const GET = async (req: NextRequest) => {
         middle_name: true,
         last_name: true,
         email: true,
+        activeBoard: {
+          select: {
+            id: true,
+            title: true,
+            ownerId: true,
+            owner: true,
+          },
+        },
         createdAt: true,
         updatedAt: true,
         ownedBoards: true,
@@ -57,6 +65,7 @@ export const GET = async (req: NextRequest) => {
         .trim()
         .replace(/\s+/g, " "),
       email: user.email,
+      activeBoard: user.activeBoard,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       ownedBoards: user.ownedBoards,
