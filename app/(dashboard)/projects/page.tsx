@@ -5,11 +5,13 @@ import { format } from "date-fns";
 import { AddNewTaskDialog } from "./_components/AddNewTaskDialog";
 import { AddNewProjectDialog } from "./_components/AddNewProjectDialog";
 import { AddNewListDialog } from "./_components/AddNewListDialog";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useBoards } from "./hooks";
 import { AxiosErrorType, handleApiError } from "@/app/axios/axios-error";
 import { toast } from "sonner";
 import { AddMembersDialog } from "./_components/AddMembersDialog";
+import SelectProjectTitle from "./_components/SelectProjectTitle";
+import { AuthContext } from "@/context/AuthContext";
 
 const mockData = [
   {
@@ -38,12 +40,16 @@ const mockData = [
 ];
 
 const ProjectsPage = () => {
+  const { user, activeBoard } = useContext(AuthContext);
   const [title, setTitle] = useState("");
   const [openProject, setOpenProject] = useState(false);
   const [openMember, setOpenMember] = useState(false);
-
-  const { createBoardMutation } = useBoards();
+  const { createBoardMutation, userBoardList } = useBoards();
   const { mutateAsync: createBoardAction, isPending } = createBoardMutation;
+  const { data: userBoardListData } = userBoardList({
+    page: 1,
+    limit: 100,
+  });
 
   const handleTaskAdd = (task: {
     title: string;
@@ -70,24 +76,26 @@ const ProjectsPage = () => {
 
   return (
     <div className="p-4 h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6 shrink-0">
-        <h2 className="font-bold text-2xl">Project Name</h2>
-        <div className="space-x-1.5">
-          <AddMembersDialog isOpen={openMember} setIsOpen={setOpenMember} />
-          <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
-          <AddNewProjectDialog
-            isOpen={openProject}
-            setIsOpen={setOpenProject}
-            title={title}
-            setTitle={setTitle}
-            onSubmit={onSubmitProject}
-            isLoading={isPending}
-          />
-          <AddNewListDialog />
-        </div>
+      <SelectProjectTitle
+        projectBoardTitle={
+          !activeBoard?.title ? "Select Project Board" : activeBoard.title
+        }
+        boards={userBoardListData?.data.boards || []}
+        ownerId={user?.id || ""}
+      />
+      <div className="flex flex-row p-2 gap-2 overflow-auto ml-auto">
+        <AddMembersDialog isOpen={openMember} setIsOpen={setOpenMember} />
+        <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
+        <AddNewProjectDialog
+          isOpen={openProject}
+          setIsOpen={setOpenProject}
+          title={title}
+          setTitle={setTitle}
+          onSubmit={onSubmitProject}
+          isLoading={isPending}
+        />
+        <AddNewListDialog />
       </div>
-
       {/* Kanban Board */}
       <div className="flex-1 min-h-0">
         <div className="flex gap-1.5 overflow-x-auto h-full pb-2 border p-2.5 shadow">

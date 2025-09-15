@@ -1,6 +1,15 @@
-import { AddBoardMemberApi, CreateBoardApi } from "@/app/(apiFn)/boardsApi";
+import {
+  AddBoardMemberApi,
+  CreateBoardApi,
+  GetBoardsListApip,
+} from "@/app/(apiFn)/boardsApi";
 import { GetUserListApi } from "@/app/(apiFn)/userApi";
-import { PaginatedResponseT, UserT } from "@/utils/types";
+import {
+  BoardsT,
+  PaginatedDataResponseT,
+  PaginatedResponseT,
+  UserT,
+} from "@/utils/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 type PaginationApiParamsT = {
@@ -14,6 +23,10 @@ type AddBaordMemberPayloadT = {
   user_id: string;
   board_id: string;
 };
+
+export type PaginatedBoardListResponse = PaginatedDataResponseT<{
+  boards: BoardsT[];
+}>;
 
 export const useBoards = () => {
   // POST: Crete new Board
@@ -46,5 +59,26 @@ export const useBoards = () => {
     },
   });
 
-  return { createBoardMutation, useUserList, addBaordMemberMutation };
+  // GET: Get Owner's list of board
+  const userBoardList = ({
+    search,
+    page,
+    limit,
+    enabled = true,
+  }: PaginationApiParamsT) => {
+    return useQuery<PaginatedBoardListResponse>({
+      queryKey: ["userBoardList", search, page, limit],
+      queryFn: async () => {
+        return await GetBoardsListApip({ search, page, limit });
+      },
+      enabled,
+    });
+  };
+
+  return {
+    createBoardMutation,
+    useUserList,
+    addBaordMemberMutation,
+    userBoardList,
+  };
 };

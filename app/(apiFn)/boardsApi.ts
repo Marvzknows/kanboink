@@ -7,3 +7,7 @@ export const CreateBoardApi = async (payload = {}) => {
 export const AddBoardMemberApi = async (payload = {}) => {
   return apiClient.post("/board/member", payload);
 };
+
+export const GetBoardsListApip = async (params = {}) => {
+  return apiClient.get("/board", params);
+};

@@ -105,33 +105,35 @@ export const GET = async (req: NextRequest) => {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const skip = (page - 1) * limit;
 
+    const whereCondition = {
+      OR: [
+        {
+          ownerId: user.userId,
+          members: {
+            some: {
+              id: user.userId,
+            },
+          },
+        },
+      ],
+      ...(search
+        ? {
+            title: {
+              contains: search,
+            },
+          }
+        : {}),
+    };
+
     const [total, board] = await prisma.$transaction([
       // Count
       prisma.board.count({
-        where: {
-          ownerId: user.userId,
-          ...(search
-            ? {
-                title: {
-                  contains: search,
-                },
-              }
-            : {}),
-        },
+        where: whereCondition,
       }),
 
       // Paginated findmany
       prisma.board.findMany({
-        where: {
-          ownerId: user.userId,
-          ...(search
-            ? {
-                title: {
-                  contains: search,
-                },
-              }
-            : {}),
-        },
+        where: whereCondition,
         include: {
           owner: {
             select: {
@@ -160,18 +162,13 @@ export const GET = async (req: NextRequest) => {
       }),
     ]);
 
-    // formatted response
     const hasNextPage = page * limit < total;
     const hasPrevPage = page > 1;
-
-    const formattedResponse = {
-      board: board,
-    };
 
     return NextResponse.json(
       {
         success: true,
-        data: formattedResponse,
+        data: { boards: board },
         pagination: {
           total: total,
           hasNextPage,
@@ -180,7 +177,7 @@ export const GET = async (req: NextRequest) => {
           currentPage: page,
         },
       },
-      { status: 201 }
+      { status: 200 }
     );
   } catch (error) {
     console.error(error);
