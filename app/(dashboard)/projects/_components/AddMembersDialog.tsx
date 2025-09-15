@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/popover";
 import { useState } from "react";
 import { useBoards } from "../hooks";
+import { toast } from "sonner";
+import { AxiosErrorType, handleApiError } from "@/app/axios/axios-error";
 
 type Props = {
   isOpen: boolean;
@@ -36,6 +38,8 @@ type Props = {
 };
 
 export function AddMembersDialog({ isOpen, setIsOpen }: Props) {
+  const { addBaordMemberMutation } = useBoards();
+  const { mutateAsync: addMemberAction, isPending } = addBaordMemberMutation;
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [search, setSearch] = useState("");
@@ -61,6 +65,28 @@ export function AddMembersDialog({ isOpen, setIsOpen }: Props) {
     return `${user.first_name} ${user.middle_name || ""} ${user.last_name}`
       .trim()
       .replace(/\s+/g, " ");
+  };
+
+  const handleSubmit = async () => {
+    if (!value) return toast.error("Invalid member");
+    try {
+      await addMemberAction(
+        {
+          user_id: value,
+          board_id: "",
+        },
+        {
+          onSuccess: () => {
+            toast.success("Board member added successfully!");
+            setValue("");
+            setSearch("");
+            setIsOpen(false);
+          },
+        }
+      );
+    } catch (err) {
+      handleApiError(err as AxiosErrorType);
+    }
   };
 
   return (
@@ -146,15 +172,15 @@ export function AddMembersDialog({ isOpen, setIsOpen }: Props) {
         <DialogFooter className="gap-2 sm:gap-2">
           <Button
             onClick={() => setIsOpen(false)}
-            // disabled={isLoading}
+            disabled={isPending}
             variant="outline"
             className="flex-1 sm:flex-none"
           >
             Cancel
           </Button>
           <Button
-            // disabled={isLoading}
-            // onClick={onSubmit}
+            disabled={isPending}
+            onClick={handleSubmit}
             className="flex-1 sm:flex-none shadow-sm"
           >
             Add

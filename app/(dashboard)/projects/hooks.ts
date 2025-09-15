@@ -1,4 +1,4 @@
-import { CreateBoardApi } from "@/app/(apiFn)/boardsApi";
+import { AddBoardMemberApi, CreateBoardApi } from "@/app/(apiFn)/boardsApi";
 import { GetUserListApi } from "@/app/(apiFn)/userApi";
 import { PaginatedResponseT, UserT } from "@/utils/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -8,6 +8,11 @@ type PaginationApiParamsT = {
   page?: number;
   limit?: number;
   enabled?: boolean;
+};
+
+type AddBaordMemberPayloadT = {
+  user_id: string;
+  board_id: string;
 };
 
 export const useBoards = () => {
@@ -34,5 +39,12 @@ export const useBoards = () => {
     });
   };
 
-  return { createBoardMutation, useUserList };
+  // POST: Add board member
+  const addBaordMemberMutation = useMutation({
+    mutationFn: async (payload: AddBaordMemberPayloadT) => {
+      return await AddBoardMemberApi(payload);
+    },
+  });
+
+  return { createBoardMutation, useUserList, addBaordMemberMutation };
 };
