@@ -3,7 +3,7 @@ import {
   CreateBoardApi,
   GetBoardsListApip,
 } from "@/app/(apiFn)/boardsApi";
-import { GetUserListApi } from "@/app/(apiFn)/userApi";
+import { GetUserListApi, SetUserActiveBoardApi } from "@/app/(apiFn)/userApi";
 import {
   BoardsT,
   PaginatedDataResponseT,
@@ -75,10 +75,20 @@ export const useBoards = () => {
     });
   };
 
+  // POST: Set Active Board
+  const setUserActiveBoardMutation = useMutation({
+    mutationFn: async (board_id: string) => {
+      return await SetUserActiveBoardApi({
+        board_id: board_id,
+      });
+    },
+  });
+
   return {
     createBoardMutation,
     useUserList,
     addBaordMemberMutation,
     userBoardList,
+    setUserActiveBoardMutation,
   };
 };

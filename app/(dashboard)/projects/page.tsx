@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { AddMembersDialog } from "./_components/AddMembersDialog";
 import SelectProjectTitle from "./_components/SelectProjectTitle";
 import { AuthContext } from "@/context/AuthContext";
+import { ActiveBoardT } from "@/app/(auth)/types";
 
 const mockData = [
   {
@@ -40,12 +41,17 @@ const mockData = [
 ];
 
 const ProjectsPage = () => {
-  const { user, activeBoard } = useContext(AuthContext);
+  const { user, activeBoard, setUserActiveBoard } = useContext(AuthContext);
   const [title, setTitle] = useState("");
   const [openProject, setOpenProject] = useState(false);
   const [openMember, setOpenMember] = useState(false);
-  const { createBoardMutation, userBoardList } = useBoards();
+  const { createBoardMutation, userBoardList, setUserActiveBoardMutation } =
+    useBoards();
   const { mutateAsync: createBoardAction, isPending } = createBoardMutation;
+  const {
+    mutateAsync: setActiveBoardAction,
+    isPending: isUpdatingActiveBoard,
+  } = setUserActiveBoardMutation;
   const { data: userBoardListData } = userBoardList({
     page: 1,
     limit: 100,
@@ -74,6 +80,20 @@ const ProjectsPage = () => {
     }
   };
 
+  const handleOnSelectProjectBoard = async (activeBoard: ActiveBoardT) => {
+    if (!activeBoard?.id) return toast.error("Invalid Board");
+    try {
+      await setActiveBoardAction(activeBoard.id, {
+        onSuccess: () => {
+          setUserActiveBoard(activeBoard);
+          toast.success("Updated Active Board");
+        },
+      });
+    } catch (err) {
+      handleApiError(err as AxiosErrorType);
+    }
+  };
+
   return (
     <div className="p-4 h-full flex flex-col">
       <SelectProjectTitle
@@ -82,19 +102,24 @@ const ProjectsPage = () => {
         }
         boards={userBoardListData?.data.boards || []}
         ownerId={user?.id || ""}
+        handleOnSelect={handleOnSelectProjectBoard}
+        isLoading={isUpdatingActiveBoard}
       />
-      <div className="flex flex-row p-2 gap-2 overflow-auto ml-auto">
-        <AddMembersDialog isOpen={openMember} setIsOpen={setOpenMember} />
-        <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
-        <AddNewProjectDialog
-          isOpen={openProject}
-          setIsOpen={setOpenProject}
-          title={title}
-          setTitle={setTitle}
-          onSubmit={onSubmitProject}
-          isLoading={isPending}
-        />
-        <AddNewListDialog />
+      <div className="flex flex-row p-2 gap-2 overflow-x-auto">
+        <div className="flex-1"></div>
+        <div className="flex gap-2 flex-shrink-0">
+          <AddMembersDialog isOpen={openMember} setIsOpen={setOpenMember} />
+          <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
+          <AddNewProjectDialog
+            isOpen={openProject}
+            setIsOpen={setOpenProject}
+            title={title}
+            setTitle={setTitle}
+            onSubmit={onSubmitProject}
+            isLoading={isPending}
+          />
+          <AddNewListDialog />
+        </div>
       </div>
       {/* Kanban Board */}
       <div className="flex-1 min-h-0">
