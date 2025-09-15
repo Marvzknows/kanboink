@@ -5,10 +5,12 @@ import { AuthContext, UserT } from "./AuthContext";
 import { useRouter } from "next/navigation";
 import { signoutAction } from "@/app/actions/auth/authActions";
 import Cookies from "js-cookie";
+import { ActiveBoardT } from "@/app/(auth)/types";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserT | null>(null);
-  const [loading, setLoading] = useState(false); // ✅ track pending state
+  const [activeBoard, setActiveBoard] = useState<ActiveBoardT>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   // useCallback so it doesn't recreate on every render
@@ -36,6 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [router]);
 
+  const setUserActiveBoard = useCallback((activeBoard: ActiveBoardT) => {
+    setActiveBoard(activeBoard);
+  }, []);
+
   // // useMemo so the context value is stable
   // const value = useMemo(
   //   () => ({ user, setUserAuth, logout }),
@@ -44,7 +50,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, setUserAuth, logout, loadingLogout: loading }}
+      value={{
+        user,
+        setUserAuth,
+        logout,
+        loadingLogout: loading,
+        activeBoard,
+        setUserActiveBoard,
+      }}
     >
       {children}
     </AuthContext.Provider>

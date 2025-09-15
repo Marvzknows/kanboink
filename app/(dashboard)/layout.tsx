@@ -31,7 +31,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { data } = useMe();
-  const { setUserAuth, loadingLogout, logout } = useContext(AuthContext);
+  const { setUserAuth, loadingLogout, logout, setUserActiveBoard } =
+    useContext(AuthContext);
 
   useEffect(() => {
     if (data?.data) {
@@ -43,6 +44,7 @@ export default function DashboardLayout({
         email: data?.data.email,
         createdAt: data?.data.createdAt,
       });
+      setUserActiveBoard(data.data.activeBoard || null);
     }
   }, [data, setUserAuth]);
 

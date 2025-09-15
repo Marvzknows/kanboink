@@ -11,6 +11,7 @@ export type UserDataT = {
   last_name: string;
   full_name: string;
   email: string;
+  activeBoard: ActiveBoardT;
   createdAt: string;
   updatedAt: string;
   ownedBoards: OwnedBoardsT[];
@@ -38,3 +39,9 @@ export type MemberBoardsT = {
   updatedAt: string;
   ownerId: string;
 };
+
+export type ActiveBoardT = {
+  id: string;
+  title: string;
+  ownderId: string;
+} | null;

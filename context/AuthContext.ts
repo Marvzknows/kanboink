@@ -1,3 +1,4 @@
+import { ActiveBoardT } from "@/app/(auth)/types";
 import { createContext } from "react";
 export type UserT = {
   id: string;
@@ -11,6 +12,8 @@ export type UserT = {
 export type AuthContextType = {
   user: UserT | null;
   setUserAuth: (user: UserT) => void;
+  activeBoard: ActiveBoardT;
+  setUserActiveBoard: (activeBoard: ActiveBoardT) => void;
   logout: () => void;
   loadingLogout: boolean;
 };
@@ -18,6 +21,8 @@ export type AuthContextType = {
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   setUserAuth: () => {},
+  activeBoard: null,
+  setUserActiveBoard: () => {},
   logout: () => {},
   loadingLogout: false,
 });
