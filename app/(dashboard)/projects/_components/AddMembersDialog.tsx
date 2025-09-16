@@ -31,13 +31,15 @@ import { useState } from "react";
 import { useBoards } from "../hooks";
 import { toast } from "sonner";
 import { AxiosErrorType, handleApiError } from "@/app/axios/axios-error";
+import { ActiveBoardT } from "@/app/(auth)/types";
 
 type Props = {
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  active_board: ActiveBoardT;
 };
 
-export function AddMembersDialog({ isOpen, setIsOpen }: Props) {
+export function AddMembersDialog({ isOpen, setIsOpen, active_board }: Props) {
   const { addBaordMemberMutation } = useBoards();
   const { mutateAsync: addMemberAction, isPending } = addBaordMemberMutation;
   const [open, setOpen] = useState(false);
@@ -68,12 +70,12 @@ export function AddMembersDialog({ isOpen, setIsOpen }: Props) {
   };
 
   const handleSubmit = async () => {
-    if (!value) return toast.error("Invalid member");
+    if (!value || !active_board) return toast.error("Invalid data");
     try {
       await addMemberAction(
         {
           user_id: value,
-          board_id: "",
+          board_id: active_board?.id,
         },
         {
           onSuccess: () => {
