@@ -14,50 +14,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { toast } from "sonner";
 
-export function AddNewListDialog() {
-  const [isOpen, setIsOpen] = useState(false);
+type Props = {
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export function AddNewListDialog({ isOpen, setIsOpen }: Props) {
   const [title, setTitle] = useState("");
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
 
-  const frameworks = [
-    {
-      value: "next.js",
-      label: "Next.js",
-    },
-    {
-      value: "sveltekit",
-      label: "SvelteKit",
-    },
-    {
-      value: "nuxt.js",
-      label: "Nuxt.js",
-    },
-    {
-      value: "remix",
-      label: "Remix",
-    },
-    {
-      value: "astro",
-      label: "Astro",
-    },
-  ];
+  const handleSubmit = () => {
+    if (!title.trim()) return toast.error("Invalid list title");
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -94,71 +63,9 @@ export function AddNewListDialog() {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter a clear, descriptive title..."
+                placeholder="Enter a list title..."
                 className="h-10"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="title"
-                className="text-sm font-medium flex items-center gap-1"
-              >
-                Project List
-                <span className="text-red-500">*</span>
-              </Label>
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-[200px] justify-between font-normal"
-                  >
-                    {value
-                      ? frameworks.find(
-                          (framework) => framework.value === value
-                        )?.label
-                      : "Select project board..."}
-                    <ChevronsUpDown className="opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
-                  <Command>
-                    <CommandInput
-                      placeholder="Search framework..."
-                      className="h-9"
-                    />
-                    <CommandList>
-                      <CommandEmpty>Project board found.</CommandEmpty>
-                      <CommandGroup>
-                        {frameworks.map((framework) => (
-                          <CommandItem
-                            key={framework.value}
-                            value={framework.value}
-                            onSelect={(currentValue) => {
-                              setValue(
-                                currentValue === value ? "" : currentValue
-                              );
-                              setOpen(false);
-                            }}
-                          >
-                            {framework.label}
-                            <Check
-                              className={cn(
-                                "ml-auto",
-                                value === framework.value
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
             </div>
           </div>
         </div>
@@ -169,7 +76,12 @@ export function AddNewListDialog() {
           <Button variant="outline" className="flex-1 sm:flex-none">
             Cancel
           </Button>
-          <Button className="flex-1 sm:flex-none shadow-sm">Create</Button>
+          <Button
+            onClick={handleSubmit}
+            className="flex-1 sm:flex-none shadow-sm"
+          >
+            Create
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

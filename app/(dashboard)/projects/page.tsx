@@ -45,6 +45,8 @@ const ProjectsPage = () => {
   const [title, setTitle] = useState("");
   const [openProject, setOpenProject] = useState(false);
   const [openMember, setOpenMember] = useState(false);
+  const [openList, setOpenList] = useState(false);
+
   const { createBoardMutation, userBoardList, setUserActiveBoardMutation } =
     useBoards();
 
@@ -127,7 +129,7 @@ const ProjectsPage = () => {
             onSubmit={onSubmitProject}
             isLoading={isPending}
           />
-          <AddNewListDialog />
+          <AddNewListDialog isOpen={openList} setIsOpen={setOpenList} />
         </div>
       </div>
       {/* Kanban Board */}
