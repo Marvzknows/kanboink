@@ -88,7 +88,6 @@ const ProjectsPage = () => {
     try {
       await setActiveBoardAction(activeBoard.id, {
         onSuccess: () => {
-          console.log("ACTIVE BOARD: ", activeBoard);
           setUserActiveBoard(activeBoard);
           toast.success("Updated Active Board");
         },
@@ -97,8 +96,6 @@ const ProjectsPage = () => {
       handleApiError(err as AxiosErrorType);
     }
   };
-  console.log("User Id: ", user?.id);
-  console.log("Board owner Id: ", activeBoard?.ownerId);
 
   return (
     <div className="p-4 h-full flex flex-col">

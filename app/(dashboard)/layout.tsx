@@ -24,13 +24,14 @@ import { useMe } from "../(auth)/_hooks/useMe";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
+import FullPageLoader from "@/components/FullPageLoader";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { data } = useMe();
+  const { data, isFetching } = useMe();
   const { setUserAuth, loadingLogout, logout, setUserActiveBoard } =
     useContext(AuthContext);
 
@@ -52,6 +53,10 @@ export default function DashboardLayout({
 
   // split pathname: "/projects" -> ["projects"]
   const segments = pathname.split("/").filter(Boolean);
+
+  if (isFetching) {
+    return <FullPageLoader />;
+  }
 
   return (
     <SidebarProvider>
