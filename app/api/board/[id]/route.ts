@@ -2,13 +2,16 @@ import { getUserFromRequest } from "@/lib/jwt";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-type GetBoardParamsT = {
-  params: {
-    id: string;
-  };
-};
+// type GetBoardParamsT = {
+//   params: {
+//     id: string;
+//   };
+// };
 
-export const GET = async (req: NextRequest, { params }: GetBoardParamsT) => {
+export const GET = async (
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
     const user = await getUserFromRequest(req);
     if (!user) {
@@ -18,7 +21,7 @@ export const GET = async (req: NextRequest, { params }: GetBoardParamsT) => {
       );
     }
 
-    const { id } = params;
+    const { id } = await context.params;
 
     const board = await prisma.board.findUnique({
       where: {
@@ -43,6 +46,23 @@ export const GET = async (req: NextRequest, { params }: GetBoardParamsT) => {
             middle_name: true,
             last_name: true,
             email: true,
+          },
+        },
+        lists: {
+          select: {
+            id: true,
+            title: true,
+            boardId: true,
+            cards: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                assigneeId: true,
+                listId: true,
+                priority: true,
+              },
+            },
           },
         },
       },
