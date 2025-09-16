@@ -30,9 +30,10 @@ model User {
   ownedBoards   Board[]        @relation("BoardOwner") // <-- relation to boards owned by this user
   boards        Board[]        @relation("BoardMembers") // <-- relation to boards they are a member of
   activities    ActivityLog[]
-  cards         Card[]
+  cards         Card[]         @relation("CreatedCards")
   comments      Comment[]
   refreshTokens RefreshToken[]
+  Card          Card[]
 }
 
 model RefreshToken {
@@ -69,15 +70,17 @@ model Card {
   title       String
   description String?
   assigneeId  String?
+  createdById String
   listId      String
   priority    PriorityList
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   // Relations
-  user     User?     @relation(fields: [assigneeId], references: [id], onDelete: Cascade)
-  list     List      @relation(fields: [listId], references: [id], onDelete: Cascade)
-  comments Comment[]
+  user      User?     @relation(fields: [assigneeId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("CreatedCards", fields: [createdById], references: [id], onDelete: Cascade)
+  list      List      @relation(fields: [listId], references: [id], onDelete: Cascade)
+  comments  Comment[]
 }
 
 // List 

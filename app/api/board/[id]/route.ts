@@ -61,6 +61,15 @@ export const GET = async (
                 assigneeId: true,
                 listId: true,
                 priority: true,
+                createdBy: {
+                  select: {
+                    id: true,
+                    first_name: true,
+                    middle_name: true,
+                    last_name: true,
+                    email: true,
+                  },
+                },
               },
             },
           },
