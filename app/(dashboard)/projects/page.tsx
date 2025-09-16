@@ -111,11 +111,13 @@ const ProjectsPage = () => {
       <div className="flex flex-row p-2 gap-2 overflow-x-auto">
         <div className="flex-1"></div>
         <div className="flex gap-2 flex-shrink-0">
-          <AddMembersDialog
-            isOpen={openMember}
-            setIsOpen={setOpenMember}
-            active_board={activeBoard}
-          />
+          {user?.id === activeBoard?.ownerId && (
+            <AddMembersDialog
+              isOpen={openMember}
+              setIsOpen={setOpenMember}
+              active_board={activeBoard}
+            />
+          )}
           <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
           <AddNewProjectDialog
             isOpen={openProject}
