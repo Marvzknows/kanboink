@@ -30,9 +30,18 @@ export const POST = async (req: NextRequest) => {
       (member) => member.id === user_id
     );
 
+    const isOwner = board?.ownerId === user.userId;
+
     if (isAlreadyMember) {
       return NextResponse.json(
         { success: false, error: "User is already a member" },
+        { status: 409 }
+      );
+    }
+
+    if (!isOwner) {
+      return NextResponse.json(
+        { success: false, error: "Invalid Board Owner" },
         { status: 409 }
       );
     }
