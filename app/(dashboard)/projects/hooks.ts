@@ -3,6 +3,7 @@ import {
   CreateBoardApi,
   GetBoardsListApip,
 } from "@/app/(apiFn)/boardsApi";
+import { CreateBoardListApi } from "@/app/(apiFn)/list";
 import { GetUserListApi, SetUserActiveBoardApi } from "@/app/(apiFn)/userApi";
 import {
   BoardsT,
@@ -21,6 +22,11 @@ type PaginationApiParamsT = {
 
 type AddBaordMemberPayloadT = {
   user_id: string;
+  board_id: string;
+};
+
+export type CreateBoardListPaylodT = {
+  title: string;
   board_id: string;
 };
 
@@ -97,11 +103,22 @@ export const useBoards = () => {
     },
   });
 
+  // POST: Create Board list
+  const createBoardListMutation = useMutation({
+    mutationFn: async (payload: CreateBoardListPaylodT) => {
+      return await CreateBoardListApi(payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userBoardList"] });
+    },
+  });
+
   return {
     createBoardMutation,
     useUserList,
     addBaordMemberMutation,
     userBoardList,
     setUserActiveBoardMutation,
+    createBoardListMutation,
   };
 };

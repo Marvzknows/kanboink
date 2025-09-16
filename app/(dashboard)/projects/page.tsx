@@ -46,9 +46,14 @@ const ProjectsPage = () => {
   const [openProject, setOpenProject] = useState(false);
   const [openMember, setOpenMember] = useState(false);
   const [openList, setOpenList] = useState(false);
+  const [listTitle, setListTitle] = useState("");
 
-  const { createBoardMutation, userBoardList, setUserActiveBoardMutation } =
-    useBoards();
+  const {
+    createBoardMutation,
+    userBoardList,
+    setUserActiveBoardMutation,
+    createBoardListMutation,
+  } = useBoards();
 
   const { mutateAsync: createBoardAction, isPending } = createBoardMutation;
   const {
@@ -61,6 +66,9 @@ const ProjectsPage = () => {
       page: 1,
       limit: 100,
     });
+
+  const { mutateAsync: createBoardListAction, isPending: isCreatingList } =
+    createBoardListMutation;
 
   const handleTaskAdd = (task: {
     title: string;
@@ -99,6 +107,25 @@ const ProjectsPage = () => {
     }
   };
 
+  const onSubmitCreateList = async () => {
+    if (!activeBoard?.id) return toast.error("Invalid data");
+    if (!listTitle.trim()) return toast.error("Invalid board list title");
+    try {
+      await createBoardListAction(
+        { title: listTitle, board_id: activeBoard.id },
+        {
+          onSuccess: () => {
+            toast.success("New list successfully added");
+            setOpenList(false);
+            setListTitle("");
+          },
+        }
+      );
+    } catch (error) {
+      handleApiError(error as AxiosErrorType);
+    }
+  };
+
   return (
     <div className="p-4 h-full flex flex-col">
       <SelectProjectTitle
@@ -129,7 +156,14 @@ const ProjectsPage = () => {
             onSubmit={onSubmitProject}
             isLoading={isPending}
           />
-          <AddNewListDialog isOpen={openList} setIsOpen={setOpenList} />
+          <AddNewListDialog
+            isOpen={openList}
+            setIsOpen={setOpenList}
+            onSubmit={onSubmitCreateList}
+            title={listTitle}
+            setTitle={setListTitle}
+            isLoading={isCreatingList}
+          />
         </div>
       </div>
       {/* Kanban Board */}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,20 +13,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
 
 type Props = {
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  title: string;
+  setTitle: React.Dispatch<React.SetStateAction<string>>;
+  onSubmit: () => void;
+  isLoading: boolean;
 };
 
-export function AddNewListDialog({ isOpen, setIsOpen }: Props) {
-  const [title, setTitle] = useState("");
-
-  const handleSubmit = () => {
-    if (!title.trim()) return toast.error("Invalid list title");
-  };
-
+export function AddNewListDialog({
+  isOpen,
+  setIsOpen,
+  onSubmit,
+  title,
+  setTitle,
+  isLoading,
+}: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -73,11 +76,16 @@ export function AddNewListDialog({ isOpen, setIsOpen }: Props) {
         <Separator />
 
         <DialogFooter className="gap-2 sm:gap-2">
-          <Button variant="outline" className="flex-1 sm:flex-none">
+          <Button
+            disabled={isLoading}
+            variant="outline"
+            className="flex-1 sm:flex-none"
+          >
             Cancel
           </Button>
           <Button
-            onClick={handleSubmit}
+            disabled={isLoading}
+            onClick={onSubmit}
             className="flex-1 sm:flex-none shadow-sm"
           >
             Create

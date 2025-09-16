@@ -17,6 +17,13 @@ export const POST = async (req: NextRequest) => {
     const body = await req.json();
     const { title, board_id } = body;
 
+    if (!title.trim()) {
+      return NextResponse.json(
+        { success: false, error: "Invalid list title" },
+        { status: 409 }
+      );
+    }
+
     // check if the user is the owner of the board
     const board = await prisma.board.findUnique({
       where: {
