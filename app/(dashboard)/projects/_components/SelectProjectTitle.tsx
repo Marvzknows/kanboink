@@ -53,7 +53,7 @@ const SelectProjectTitle = ({
                   handleOnSelect({
                     id: board.id,
                     title: board.title,
-                    ownderId: board.ownerId,
+                    ownerId: board.ownerId,
                   })
                 }
                 key={board.id}

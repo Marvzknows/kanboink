@@ -44,15 +44,4 @@ export type ActiveBoardT = {
   id: string;
   title: string;
   ownerId: string;
-  owner: {
-    id: string;
-    first_name: string;
-    middle_name: string | null;
-    last_name: string;
-    full_name: string;
-    email: string;
-    activeBoard: ActiveBoardT;
-    createdAt: string;
-    updatedAt: string;
-  };
 } | null;
