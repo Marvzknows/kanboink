@@ -124,29 +124,35 @@ const ProjectsPage = () => {
       {/* Kanban Board */}
       <div className="flex-1 min-h-0">
         <div className="flex gap-1.5 overflow-x-auto h-full pb-2 border p-2.5 shadow">
-          {mockData.map((list) => (
-            <div
-              key={list.list_name}
-              className="min-w-[280px] max-w-[280px] flex-shrink-0 flex flex-col gap-2 p-2.5 rounded shadow border bg-secondary"
-            >
-              {/* Column Header */}
-              <h3 className="font-semibold text-lg mb-2">{list.list_name}</h3>
+          {activeBoard ? (
+            mockData.map((list) => (
+              <div
+                key={list.list_name}
+                className="min-w-[280px] max-w-[280px] flex-shrink-0 flex flex-col gap-2 p-2.5 rounded shadow border bg-secondary"
+              >
+                {/* Column Header */}
+                <h3 className="font-semibold text-lg mb-2">{list.list_name}</h3>
 
-              {/* Cards */}
-              <div className="flex flex-col gap-2 overflow-y-auto">
-                {list.card.map((task) => (
-                  <Card key={task.id} className="shadow-sm rounded">
-                    <CardHeader>
-                      <CardTitle className="text-base">{task.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-xs text-muted-foreground">
-                      Created: {format(task.createdAt, "MMM dd, yyyy")}
-                    </CardContent>
-                  </Card>
-                ))}
+                {/* Cards */}
+                <div className="flex flex-col gap-2 overflow-y-auto">
+                  {list.card.map((task) => (
+                    <Card key={task.id} className="shadow-sm rounded">
+                      <CardHeader>
+                        <CardTitle className="text-base">
+                          {task.title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-xs text-muted-foreground">
+                        Created: {format(task.createdAt, "MMM dd, yyyy")}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="m-auto">NO BOARD FOUND</p>
+          )}
         </div>
       </div>
     </div>

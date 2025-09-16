@@ -102,12 +102,13 @@ export default function DashboardLayout({
           <div className="ml-auto">
             <ModeToggle />
             <Button
+              disabled={loadingLogout}
               onClick={() => logout()}
               className="ml-auto"
               variant="ghost"
             >
               <LogOut />
-              {loadingLogout ? "Logging out..." : "Logout"}
+              Logout
             </Button>
           </div>
         </header>
