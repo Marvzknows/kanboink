@@ -31,7 +31,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { data, isFetching } = useMe();
+  const { data, isFetching, error } = useMe();
   const { setUserAuth, loadingLogout, logout, setUserActiveBoard } =
     useContext(AuthContext);
 
@@ -48,6 +48,13 @@ export default function DashboardLayout({
       setUserActiveBoard(data.data.activeBoard || null);
     }
   }, [data, setUserAuth]);
+
+  // Force logout if meApi fails
+  useEffect(() => {
+    if (error) {
+      logout();
+    }
+  }, [error]);
 
   const pathname = usePathname();
 
