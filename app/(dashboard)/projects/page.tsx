@@ -47,15 +47,18 @@ const ProjectsPage = () => {
   const [openMember, setOpenMember] = useState(false);
   const { createBoardMutation, userBoardList, setUserActiveBoardMutation } =
     useBoards();
+
   const { mutateAsync: createBoardAction, isPending } = createBoardMutation;
   const {
     mutateAsync: setActiveBoardAction,
     isPending: isUpdatingActiveBoard,
   } = setUserActiveBoardMutation;
-  const { data: userBoardListData } = userBoardList({
-    page: 1,
-    limit: 100,
-  });
+
+  const { data: userBoardListData, isLoading: isLoadingUserBoardList } =
+    userBoardList({
+      page: 1,
+      limit: 100,
+    });
 
   const handleTaskAdd = (task: {
     title: string;
@@ -103,7 +106,7 @@ const ProjectsPage = () => {
         boards={userBoardListData?.data.boards || []}
         ownerId={user?.id || ""}
         handleOnSelect={handleOnSelectProjectBoard}
-        isLoading={isUpdatingActiveBoard}
+        isLoading={isUpdatingActiveBoard || isLoadingUserBoardList}
       />
       <div className="flex flex-row p-2 gap-2 overflow-x-auto">
         <div className="flex-1"></div>

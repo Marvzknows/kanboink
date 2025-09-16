@@ -10,7 +10,7 @@ import {
   PaginatedResponseT,
   UserT,
 } from "@/utils/types";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 type PaginationApiParamsT = {
   search?: string;
@@ -29,10 +29,16 @@ export type PaginatedBoardListResponse = PaginatedDataResponseT<{
 }>;
 
 export const useBoards = () => {
-  // POST: Crete new Board
+  const queryClient = useQueryClient();
+
+  // POST: Create new Board
   const createBoardMutation = useMutation({
     mutationFn: async (title: string) => {
       return await CreateBoardApi({ title });
+    },
+    onSuccess: () => {
+      // Invalidate userBoardList queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ["userBoardList"] });
     },
   });
 
@@ -56,6 +62,10 @@ export const useBoards = () => {
   const addBaordMemberMutation = useMutation({
     mutationFn: async (payload: AddBaordMemberPayloadT) => {
       return await AddBoardMemberApi(payload);
+    },
+    onSuccess: () => {
+      // Invalidate userBoardList queries since board membership affects the list
+      queryClient.invalidateQueries({ queryKey: ["userBoardList"] });
     },
   });
 
@@ -81,6 +91,9 @@ export const useBoards = () => {
       return await SetUserActiveBoardApi({
         board_id: board_id,
       });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userBoardList"] });
     },
   });
 
