@@ -107,14 +107,8 @@ export const GET = async (req: NextRequest) => {
 
     const whereCondition = {
       OR: [
-        {
-          ownerId: user.userId,
-          members: {
-            some: {
-              id: user.userId,
-            },
-          },
-        },
+        { ownerId: user.userId },
+        { members: { some: { id: user.userId } } },
       ],
       ...(search
         ? {

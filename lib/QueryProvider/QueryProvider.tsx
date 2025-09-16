@@ -12,11 +12,12 @@ const queryClient = new QueryClient({
       // Prevent background refetch when window gains focus
       refetchOnWindowFocus: false,
       // Reduce refetch on mount if data is fresh
-      refetchOnMount: false,
+      // refetchOnMount: false,
       // Keep data fresh for 5 minutes
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      // staleTime: 5 * 60 * 1000, // 5 minutes
       // Keep data in cache for 10 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime in older versions)
+      // gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime in older versions)
+      refetchIntervalInBackground: true, // ensures refetch happens even when tab is in background
     },
   },
 });
