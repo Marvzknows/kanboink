@@ -2,6 +2,7 @@ import {
   AddBoardMemberApi,
   CreateBoardApi,
   GetBoardsListApip,
+  GetUserBoardListApi,
 } from "@/app/(apiFn)/boardsApi";
 import { CreateBoardListApi } from "@/app/(apiFn)/list";
 import { GetUserListApi, SetUserActiveBoardApi } from "@/app/(apiFn)/userApi";
@@ -109,9 +110,20 @@ export const useBoards = () => {
       return await CreateBoardListApi(payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userBoardList"] });
+      queryClient.invalidateQueries({ queryKey: ["userProjectBoardList"] });
     },
   });
+
+  // GET: Get User's project board data
+  const userProjectBaordData = (board_id: string, enabled = true) => {
+    return useQuery<any>({
+      queryKey: ["userProjectBoardList", board_id],
+      queryFn: async () => {
+        return await GetUserBoardListApi(board_id);
+      },
+      enabled,
+    });
+  };
 
   return {
     createBoardMutation,
@@ -120,5 +132,6 @@ export const useBoards = () => {
     userBoardList,
     setUserActiveBoardMutation,
     createBoardListMutation,
+    userProjectBaordData,
   };
 };

@@ -11,3 +11,7 @@ export const AddBoardMemberApi = async (payload = {}) => {
 export const GetBoardsListApip = async (params = {}) => {
   return apiClient.get("/board", params);
 };
+
+export const GetUserBoardListApi = async (board_id: string) => {
+  return apiClient.get(`/board/${board_id}`);
+};
