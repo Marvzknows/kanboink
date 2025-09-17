@@ -17,6 +17,8 @@ const queryClient = new QueryClient({
       // staleTime: 5 * 60 * 1000, // 5 minutes
       // Keep data in cache for 10 minutes
       // gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime in older versions)
+      staleTime: 0, // always consider data stale
+      gcTime: 0, // immediately garbage collect after unmount
       refetchIntervalInBackground: true, // ensures refetch happens even when tab is in background
     },
   },

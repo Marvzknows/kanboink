@@ -70,6 +70,7 @@ export const GET = async (
                     email: true,
                   },
                 },
+                createdAt: true,
               },
             },
           },

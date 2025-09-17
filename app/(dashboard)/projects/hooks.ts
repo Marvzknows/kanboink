@@ -13,6 +13,7 @@ import {
   UserT,
 } from "@/utils/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ResponseT, UserBoardProjectT } from "./_components/types";
 
 type PaginationApiParamsT = {
   search?: string;
@@ -116,7 +117,7 @@ export const useBoards = () => {
 
   // GET: Get User's project board data
   const userProjectBaordData = (board_id: string, enabled = true) => {
-    return useQuery<any>({
+    return useQuery<ResponseT<UserBoardProjectT>>({
       queryKey: ["userProjectBoardList", board_id],
       queryFn: async () => {
         return await GetUserBoardListApi(board_id);

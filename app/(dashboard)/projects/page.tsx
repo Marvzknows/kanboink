@@ -14,32 +14,6 @@ import SelectProjectTitle from "./_components/SelectProjectTitle";
 import { AuthContext } from "@/context/AuthContext";
 import { ActiveBoardT } from "@/app/(auth)/types";
 
-const mockData = [
-  {
-    list_name: "Pending Task",
-    card: [
-      { id: 1, title: "UI/UX Adjustment", createdAt: new Date() },
-      { id: 2, title: "API Adjustment", createdAt: new Date() },
-    ],
-  },
-  {
-    list_name: "In Progress",
-    card: [{ id: 3, title: "Form Validation", createdAt: new Date() }],
-  },
-  {
-    list_name: "Completed",
-    card: [{ id: 4, title: "Setup CI/CD", createdAt: new Date() }],
-  },
-  {
-    list_name: "Bugs",
-    card: [{ id: 5, title: "Create User Error", createdAt: new Date() }],
-  },
-  {
-    list_name: "Ready for Deployment",
-    card: [{ id: 6, title: "Final QA", createdAt: new Date() }],
-  },
-];
-
 const ProjectsPage = () => {
   const { user, activeBoard, setUserActiveBoard } = useContext(AuthContext);
   const [title, setTitle] = useState("");
@@ -80,7 +54,7 @@ const ProjectsPage = () => {
     console.log("Adding task:", task);
   };
 
-  const { data: userProjectBoardData, isFetching: isLoadingUserProjetBoard } =
+  const { data: userProjectBoardData, isLoading: isLoadingUserProjetBoard } =
     userProjectBaordData(String(activeBoard?.id), !!activeBoard?.id);
 
   const onSubmitProject = async () => {
@@ -175,26 +149,24 @@ const ProjectsPage = () => {
         <div className="flex gap-1.5 overflow-x-auto h-full pb-2 border p-2.5 shadow">
           {activeBoard ? (
             isLoadingUserProjetBoard ? (
-              <p>LOADING...</p>
+              <p>LOADING USER PROJECT...</p>
             ) : (
-              mockData.map((list) => (
+              userProjectBoardData?.data.board.lists.map((list) => (
                 <div
-                  key={list.list_name}
+                  key={list.id}
                   className="min-w-[280px] max-w-[280px] flex-shrink-0 flex flex-col gap-2 p-2.5 rounded shadow border bg-secondary"
                 >
-                  <h3 className="font-semibold text-lg mb-2">
-                    {list.list_name}
-                  </h3>
+                  <h3 className="font-semibold text-lg mb-2">{list.title}</h3>
                   <div className="flex flex-col gap-2 overflow-y-auto">
-                    {list.card.map((task) => (
-                      <Card key={task.id} className="shadow-sm rounded">
+                    {list.cards.map((card) => (
+                      <Card key={card.id} className="shadow-sm rounded">
                         <CardHeader>
                           <CardTitle className="text-base">
-                            {task.title}
+                            {card.title}
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="text-xs text-muted-foreground">
-                          Created: {format(task.createdAt, "MMM dd, yyyy")}
+                          Created: {format(card.createdAt, "MMM dd, yyyy")}
                         </CardContent>
                       </Card>
                     ))}
