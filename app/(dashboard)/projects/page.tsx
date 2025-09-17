@@ -13,6 +13,7 @@ import { AddMembersDialog } from "./_components/AddMembersDialog";
 import SelectProjectTitle from "./_components/SelectProjectTitle";
 import { AuthContext } from "@/context/AuthContext";
 import { ActiveBoardT } from "@/app/(auth)/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ProjectsPage = () => {
   const { user, activeBoard, setUserActiveBoard } = useContext(AuthContext);
@@ -119,11 +120,21 @@ const ProjectsPage = () => {
         <div className="flex-1"></div>
         <div className="flex gap-2 flex-shrink-0">
           {user?.id === activeBoard?.ownerId && (
-            <AddMembersDialog
-              isOpen={openMember}
-              setIsOpen={setOpenMember}
-              active_board={activeBoard}
-            />
+            <>
+              <AddMembersDialog
+                isOpen={openMember}
+                setIsOpen={setOpenMember}
+                active_board={activeBoard}
+              />
+              <AddNewListDialog
+                isOpen={openList}
+                setIsOpen={setOpenList}
+                onSubmit={onSubmitCreateList}
+                title={listTitle}
+                setTitle={setListTitle}
+                isLoading={isCreatingList}
+              />
+            </>
           )}
           <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
           <AddNewProjectDialog
@@ -134,14 +145,6 @@ const ProjectsPage = () => {
             onSubmit={onSubmitProject}
             isLoading={isPending}
           />
-          <AddNewListDialog
-            isOpen={openList}
-            setIsOpen={setOpenList}
-            onSubmit={onSubmitCreateList}
-            title={listTitle}
-            setTitle={setListTitle}
-            isLoading={isCreatingList}
-          />
         </div>
       </div>
       {/* Kanban Board */}
@@ -149,7 +152,11 @@ const ProjectsPage = () => {
         <div className="flex gap-1.5 overflow-x-auto h-full pb-2 border p-2.5 shadow">
           {activeBoard ? (
             isLoadingUserProjetBoard ? (
-              <p>LOADING USER PROJECT...</p>
+              <div className="flex gap-2 w-full h-full">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="flex-1 h-full rounded-xl" />
+                ))}
+              </div>
             ) : (
               userProjectBoardData?.data.board.lists.map((list) => (
                 <div

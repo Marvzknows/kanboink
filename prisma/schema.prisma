@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../lib/generated/prisma"
@@ -15,88 +9,88 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
+  id            String         @id @default(uuid())
+  email         String         @unique
+  createdAt     DateTime       @default(now())
   first_name    String
-  middle_name   String?
   last_name     String
-  email         String   @unique
+  middle_name   String?
   password      String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime       @updatedAt
   activeBoardId String?
-
-  // Relations
-  activeBoard   Board?         @relation(fields: [activeBoardId], references: [id], onDelete: SetNull)
-  ownedBoards   Board[]        @relation("BoardOwner") // <-- relation to boards owned by this user
-  boards        Board[]        @relation("BoardMembers") // <-- relation to boards they are a member of
   activities    ActivityLog[]
+  ownedBoards   Board[]        @relation("BoardOwner")
+  Card          Card[]
   cards         Card[]         @relation("CreatedCards")
   comments      Comment[]
+  activeBoard   Board?         @relation(fields: [activeBoardId], references: [id])
   refreshTokens RefreshToken[]
-  Card          Card[]
+  boards        Board[]        @relation("BoardMembers")
+
+  @@index([activeBoardId], map: "User_activeBoardId_fkey")
 }
 
 model RefreshToken {
   id        String   @id @default(cuid())
   token     String   @db.Text
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId], map: "refresh_tokens_userId_fkey")
   @@map("refresh_tokens")
 }
 
 model Board {
-  id      String @id @default(cuid())
-  title   String
-  ownerId String
-
-  // Relations
-  owner      User          @relation("BoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members    User[]        @relation("BoardMembers")
+  id         String        @id @default(cuid())
+  title      String
+  ownerId    String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
   activities ActivityLog[]
+  owner      User          @relation("BoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   lists      List[]
+  User       User[]
+  members    User[]        @relation("BoardMembers")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  User      User[]
+  @@index([ownerId], map: "Board_ownerId_fkey")
 }
 
-// Card
 model Card {
   id          String       @id @default(cuid())
   title       String
   description String?
   assigneeId  String?
-  createdById String
   listId      String
-  priority    PriorityList
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  priority    PriorityList
+  createdById String
+  user        User?        @relation(fields: [assigneeId], references: [id], onDelete: Cascade)
+  createdBy   User         @relation("CreatedCards", fields: [createdById], references: [id], onDelete: Cascade)
+  list        List         @relation(fields: [listId], references: [id], onDelete: Cascade)
+  comments    Comment[]
 
-  // Relations
-  user      User?     @relation(fields: [assigneeId], references: [id], onDelete: Cascade)
-  createdBy User?     @relation("CreatedCards", fields: [createdById], references: [id], onDelete: Cascade)
-  list      List      @relation(fields: [listId], references: [id], onDelete: Cascade)
-  comments  Comment[]
+  @@index([assigneeId], map: "Card_assigneeId_fkey")
+  @@index([createdById], map: "Card_createdById_fkey")
+  @@index([listId], map: "Card_listId_fkey")
 }
 
-// List 
 model List {
   id        String   @id @default(cuid())
   title     String
   boardId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  position  Int
+  cards     Card[]
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
-  // Relations 
-  cards Card[]
-  board Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  @@index([boardId], map: "List_boardId_fkey")
 }
 
-//Comments
 model Comment {
   id          String   @id @default(uuid())
   userId      String
@@ -104,26 +98,26 @@ model Comment {
   description String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  @@index([cardId], map: "Comment_cardId_fkey")
+  @@index([userId], map: "Comment_userId_fkey")
 }
 
-// Activity Log
 model ActivityLog {
-  id      String         @id @default(uuid())
-  action  ActivityAction
-  details Json? // flexible field for extra info (oldName, newName, fromList, toList, etc.)
+  id        String         @id @default(uuid())
+  action    ActivityAction
+  details   Json?
+  userId    String
+  boardId   String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  board     Board?         @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  boardId String?
-  board   Board?  @relation(fields: [boardId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@index([boardId], map: "ActivityLog_boardId_fkey")
+  @@index([userId], map: "ActivityLog_userId_fkey")
 }
 
 enum ActivityAction {
@@ -131,11 +125,9 @@ enum ActivityAction {
   CARD_UPDATED
   CARD_MOVED
   CARD_DELETED
-
   BOARD_CREATED
   BOARD_UPDATED
   BOARD_DELETED
-
   COMMENT_ADDED
   COMMENT_DELETED
 }

@@ -2,7 +2,6 @@ import { getUserFromRequest } from "@/lib/jwt";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-// Create List
 export const POST = async (req: NextRequest) => {
   try {
     const user = await getUserFromRequest(req);
@@ -13,26 +12,21 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    // Get data (title, board_id)
     const body = await req.json();
     const { title, board_id } = body;
 
-    if (!title.trim()) {
+    if (!title?.trim()) {
       return NextResponse.json(
         { success: false, error: "Invalid list title" },
         { status: 409 }
       );
     }
 
-    // check if the user is the owner of the board
     const board = await prisma.board.findUnique({
-      where: {
-        id: board_id,
-      },
+      where: { id: board_id },
     });
 
     const isOwner = board?.ownerId === user.userId;
-
     if (!board || !isOwner) {
       return NextResponse.json(
         { success: false, error: "Invalid board owner" },
@@ -40,30 +34,36 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    // create list
+    // Determine next position (max + 1 or 1 if none exist)
+    const lastList = await prisma.list.findFirst({
+      where: { boardId: board_id },
+      orderBy: { position: "desc" },
+      select: { position: true },
+    });
+
+    const nextPosition = lastList ? lastList.position + 1 : 1;
+
+    // Create new list
     const list = await prisma.list.create({
       data: {
-        title: title,
+        title,
         boardId: board_id,
+        position: nextPosition,
       },
       select: {
         id: true,
         title: true,
         boardId: true,
+        position: true,
         createdAt: true,
         updatedAt: true,
       },
     });
 
-    //formatted response
-    const formattedResponse = {
-      data: list,
-    };
-
     return NextResponse.json(
       {
         success: true,
-        data: formattedResponse,
+        data: { data: list },
       },
       { status: 201 }
     );
