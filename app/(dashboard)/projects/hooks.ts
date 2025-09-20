@@ -4,7 +4,7 @@ import {
   GetBoardsListApip,
   GetUserBoardListApi,
 } from "@/app/(apiFn)/boardsApi";
-import { CreateBoardListApi } from "@/app/(apiFn)/list";
+import { CreateBoardListApi, UpdateListPositionApi } from "@/app/(apiFn)/list";
 import { GetUserListApi, SetUserActiveBoardApi } from "@/app/(apiFn)/userApi";
 import {
   BoardsT,
@@ -13,7 +13,11 @@ import {
   UserT,
 } from "@/utils/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ResponseT, UserBoardProjectT } from "./_components/types";
+import {
+  ResponseT,
+  UpdateListPositionT,
+  UserBoardProjectT,
+} from "./_components/types";
 
 type PaginationApiParamsT = {
   search?: string;
@@ -126,6 +130,16 @@ export const useBoards = () => {
     });
   };
 
+  // PUT: Update List's Position
+  const updateBoardListPosition = useMutation({
+    mutationFn: async (payload: UpdateListPositionT) => {
+      return await UpdateListPositionApi(payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userProjectBoardList"] });
+    },
+  });
+
   return {
     createBoardMutation,
     useUserList,
@@ -134,5 +148,6 @@ export const useBoards = () => {
     setUserActiveBoardMutation,
     createBoardListMutation,
     userProjectBaordData,
+    updateBoardListPosition,
   };
 };

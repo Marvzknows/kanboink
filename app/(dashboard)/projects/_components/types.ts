@@ -51,6 +51,7 @@ export type ListT = {
   id: string;
   title: string;
   boardId: string;
+  position: number;
   cards: CardT[];
 };
 
@@ -78,4 +79,10 @@ export type UserBoardProjectT = {
     members: UserT[];
     lists: ListT[];
   };
+};
+
+export type UpdateListPositionT = {
+  listId: string;
+  newPosition: number;
+  boardId: string;
 };

@@ -14,6 +14,8 @@ import { ActiveBoardT } from "@/app/(auth)/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import BoardList from "./_components/BoardList";
 import BoardListCard from "./_components/BoardListCard";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import { SortableContext } from "@dnd-kit/sortable";
 
 const ProjectsPage = () => {
   const { user, activeBoard, setUserActiveBoard } = useContext(AuthContext);
@@ -29,6 +31,7 @@ const ProjectsPage = () => {
     setUserActiveBoardMutation,
     createBoardListMutation,
     userProjectBaordData,
+    updateBoardListPosition,
   } = useBoards();
 
   const { mutateAsync: createBoardAction, isPending } = createBoardMutation;
@@ -45,6 +48,8 @@ const ProjectsPage = () => {
 
   const { mutateAsync: createBoardListAction, isPending: isCreatingList } =
     createBoardListMutation;
+
+  const { mutateAsync: updateListPositionAction } = updateBoardListPosition;
 
   const handleTaskAdd = (task: {
     title: string;
@@ -105,6 +110,27 @@ const ProjectsPage = () => {
     }
   };
 
+  const handleDragEnd = async (e: DragEndEvent) => {
+    const { active, over } = e;
+
+    const listPositionNumber = userProjectBoardData?.data.board.lists.find(
+      (list) => list.id === over?.id
+    );
+    if (!listPositionNumber || !activeBoard?.id) return;
+
+    const payload = {
+      listId: active.id as string,
+      newPosition: listPositionNumber.position,
+      boardId: activeBoard.id,
+    };
+
+    try {
+      await updateListPositionAction(payload);
+    } catch (error) {
+      handleApiError(error as AxiosErrorType);
+    }
+  };
+
   return (
     <div className="p-4 h-full flex flex-col">
       <SelectProjectTitle
@@ -158,19 +184,29 @@ const ProjectsPage = () => {
                 ))}
               </div>
             ) : (
-              userProjectBoardData?.data.board.lists.map((list) => (
-                // List
-                <BoardList key={list.id} titile={list.title}>
-                  {/* Cards */}
-                  {list.cards.map((card) => (
-                    <BoardListCard
-                      key={card.id}
-                      title={card.title}
-                      createdAt={card.createdAt}
-                    />
+              <DndContext onDragEnd={handleDragEnd}>
+                <SortableContext
+                  items={userProjectBoardData?.data.board.lists || []}
+                >
+                  {userProjectBoardData?.data.board.lists.map((list) => (
+                    // List
+                    <BoardList
+                      key={list.id}
+                      titile={list.title}
+                      listId={list.id}
+                    >
+                      {/* Cards */}
+                      {list.cards.map((card) => (
+                        <BoardListCard
+                          key={card.id}
+                          title={card.title}
+                          createdAt={card.createdAt}
+                        />
+                      ))}
+                    </BoardList>
                   ))}
-                </BoardList>
-              ))
+                </SortableContext>
+              </DndContext>
             )
           ) : (
             <p className="m-auto">NO BOARD FOUND</p>
