@@ -49,10 +49,14 @@ export const GET = async (
           },
         },
         lists: {
+          orderBy: {
+            position: "asc",
+          },
           select: {
             id: true,
             title: true,
             boardId: true,
+            position: true,
             cards: {
               select: {
                 id: true,
