@@ -3,7 +3,7 @@
 import { AddNewTaskDialog } from "./_components/AddNewTaskDialog";
 import { AddNewProjectDialog } from "./_components/AddNewProjectDialog";
 import { AddNewListDialog } from "./_components/AddNewListDialog";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useBoards } from "./hooks";
 import { AxiosErrorType, handleApiError } from "@/app/axios/axios-error";
 import { toast } from "sonner";
@@ -15,7 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import BoardList from "./_components/BoardList";
 import BoardListCard from "./_components/BoardListCard";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { SortableContext } from "@dnd-kit/sortable";
+import { arrayMove, SortableContext } from "@dnd-kit/sortable";
+import { ListT } from "./_components/types";
 
 const ProjectsPage = () => {
   const { user, activeBoard, setUserActiveBoard } = useContext(AuthContext);
@@ -24,6 +25,8 @@ const ProjectsPage = () => {
   const [openMember, setOpenMember] = useState(false);
   const [openList, setOpenList] = useState(false);
   const [listTitle, setListTitle] = useState("");
+
+  const [lists, setLists] = useState<ListT[]>([]);
 
   const {
     createBoardMutation,
@@ -51,6 +54,17 @@ const ProjectsPage = () => {
 
   const { mutateAsync: updateListPositionAction } = updateBoardListPosition;
 
+  const { data: userProjectBoardData, isLoading: isLoadingUserProjetBoard } =
+    userProjectBaordData(String(activeBoard?.id), !!activeBoard?.id);
+
+  // Sync when server data changes
+  useEffect(() => {
+    if (userProjectBoardData?.data.board.lists) {
+      setLists(userProjectBoardData.data.board.lists);
+    }
+  }, [userProjectBoardData]);
+
+  // #region Event Listener
   const handleTaskAdd = (task: {
     title: string;
     description?: string;
@@ -59,9 +73,6 @@ const ProjectsPage = () => {
     // Handle adding the task to your data source, this would be a server action or API call
     console.log("Adding task:", task);
   };
-
-  const { data: userProjectBoardData, isLoading: isLoadingUserProjetBoard } =
-    userProjectBaordData(String(activeBoard?.id), !!activeBoard?.id);
 
   const onSubmitProject = async () => {
     try {
@@ -110,26 +121,38 @@ const ProjectsPage = () => {
     }
   };
 
-  const handleDragEnd = async (e: DragEndEvent) => {
-    const { active, over } = e;
+  const handleDragEnd = async ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
 
-    const listPositionNumber = userProjectBoardData?.data.board.lists.find(
-      (list) => list.id === over?.id
+    const oldIndex = lists.findIndex((l) => l.id === active.id);
+    const newIndex = lists.findIndex((l) => l.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Optimistically update UI
+    const newLists = arrayMove(lists, oldIndex, newIndex).map(
+      (list, index) => ({
+        ...list,
+        position: index + 1, // ensure positions are 1-based
+      })
     );
-    if (!listPositionNumber || !activeBoard?.id) return;
-
-    const payload = {
-      listId: active.id as string,
-      newPosition: listPositionNumber.position,
-      boardId: activeBoard.id,
-    };
+    setLists(newLists);
 
     try {
-      await updateListPositionAction(payload);
+      await updateListPositionAction({
+        listId: active.id as string,
+        newPosition: newIndex + 1,
+        boardId: activeBoard?.id as string,
+      });
     } catch (error) {
       handleApiError(error as AxiosErrorType);
+
+      // 🔹 Rollback on error
+      setLists(lists);
     }
   };
+
+  // #endregion
 
   return (
     <div className="p-4 h-full flex flex-col">
@@ -185,10 +208,8 @@ const ProjectsPage = () => {
               </div>
             ) : (
               <DndContext onDragEnd={handleDragEnd}>
-                <SortableContext
-                  items={userProjectBoardData?.data.board.lists || []}
-                >
-                  {userProjectBoardData?.data.board.lists.map((list) => (
+                <SortableContext items={lists.map((list) => list.id)}>
+                  {lists.map((list) => (
                     // List
                     <BoardList
                       key={list.id}
