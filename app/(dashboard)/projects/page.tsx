@@ -1,7 +1,5 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { format } from "date-fns";
 import { AddNewTaskDialog } from "./_components/AddNewTaskDialog";
 import { AddNewProjectDialog } from "./_components/AddNewProjectDialog";
 import { AddNewListDialog } from "./_components/AddNewListDialog";
@@ -14,6 +12,8 @@ import SelectProjectTitle from "./_components/SelectProjectTitle";
 import { AuthContext } from "@/context/AuthContext";
 import { ActiveBoardT } from "@/app/(auth)/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import BoardList from "./_components/BoardList";
+import BoardListCard from "./_components/BoardListCard";
 
 const ProjectsPage = () => {
   const { user, activeBoard, setUserActiveBoard } = useContext(AuthContext);
@@ -159,26 +159,17 @@ const ProjectsPage = () => {
               </div>
             ) : (
               userProjectBoardData?.data.board.lists.map((list) => (
-                <div
-                  key={list.id}
-                  className="min-w-[280px] max-w-[280px] flex-shrink-0 flex flex-col gap-2 p-2.5 rounded shadow border bg-secondary"
-                >
-                  <h3 className="font-semibold text-lg mb-2">{list.title}</h3>
-                  <div className="flex flex-col gap-2 overflow-y-auto">
-                    {list.cards.map((card) => (
-                      <Card key={card.id} className="shadow-sm rounded">
-                        <CardHeader>
-                          <CardTitle className="text-base">
-                            {card.title}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-xs text-muted-foreground">
-                          Created: {format(card.createdAt, "MMM dd, yyyy")}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
+                // List
+                <BoardList key={list.id} titile={list.title}>
+                  {/* Cards */}
+                  {list.cards.map((card) => (
+                    <BoardListCard
+                      key={card.id}
+                      title={card.title}
+                      createdAt={card.createdAt}
+                    />
+                  ))}
+                </BoardList>
               ))
             )
           ) : (
