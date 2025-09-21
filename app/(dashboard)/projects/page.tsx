@@ -147,7 +147,6 @@ const ProjectsPage = () => {
     } catch (error) {
       handleApiError(error as AxiosErrorType);
 
-      // 🔹 Rollback on error
       setLists(lists);
     }
   };
