@@ -40,8 +40,8 @@ type Props = {
 };
 
 export function AddMembersDialog({ isOpen, setIsOpen, active_board }: Props) {
-  const { addBaordMemberMutation } = useBoards();
-  const { mutateAsync: addMemberAction, isPending } = addBaordMemberMutation;
+  const { addBoardMemberMutation } = useBoards();
+  const { mutateAsync: addMemberAction, isPending } = addBoardMemberMutation;
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [search, setSearch] = useState("");

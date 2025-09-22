@@ -26,12 +26,12 @@ type PaginationApiParamsT = {
   enabled?: boolean;
 };
 
-type AddBaordMemberPayloadT = {
+type AddBoardMemberPayloadT = {
   user_id: string;
   board_id: string;
 };
 
-export type CreateBoardListPaylodT = {
+export type CreateBoardListPayloadT = {
   title: string;
   board_id: string;
 };
@@ -43,18 +43,17 @@ export type PaginatedBoardListResponse = PaginatedDataResponseT<{
 export const useBoards = () => {
   const queryClient = useQueryClient();
 
-  // POST: Create new Board
+  // 🔹 POST: Create new Board
   const createBoardMutation = useMutation({
     mutationFn: async (title: string) => {
       return await CreateBoardApi({ title });
     },
     onSuccess: () => {
-      // Invalidate userBoardList queries to refetch updated data
       queryClient.invalidateQueries({ queryKey: ["userBoardList"] });
     },
   });
 
-  // GET: list of user's
+  // GET: list of user
   const useUserList = ({
     search,
     page,
@@ -71,18 +70,17 @@ export const useBoards = () => {
   };
 
   // POST: Add board member
-  const addBaordMemberMutation = useMutation({
-    mutationFn: async (payload: AddBaordMemberPayloadT) => {
+  const addBoardMemberMutation = useMutation({
+    mutationFn: async (payload: AddBoardMemberPayloadT) => {
       return await AddBoardMemberApi(payload);
     },
     onSuccess: () => {
-      // Invalidate userBoardList queries since board membership affects the list
       queryClient.invalidateQueries({ queryKey: ["userBoardList"] });
     },
   });
 
-  // GET: Get Owner's list of board
-  const userBoardList = ({
+  // 🔹 GET: Get Owner's list of boards
+  const useUserBoardList = ({
     search,
     page,
     limit,
@@ -97,21 +95,19 @@ export const useBoards = () => {
     });
   };
 
-  // POST: Set Active Board
+  // 🔹 POST: Set Active Board
   const setUserActiveBoardMutation = useMutation({
     mutationFn: async (board_id: string) => {
-      return await SetUserActiveBoardApi({
-        board_id: board_id,
-      });
+      return await SetUserActiveBoardApi({ board_id });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userBoardList"] });
     },
   });
 
-  // POST: Create Board list
+  // 🔹 POST: Create Board list
   const createBoardListMutation = useMutation({
-    mutationFn: async (payload: CreateBoardListPaylodT) => {
+    mutationFn: async (payload: CreateBoardListPayloadT) => {
       return await CreateBoardListApi(payload);
     },
     onSuccess: () => {
@@ -119,8 +115,8 @@ export const useBoards = () => {
     },
   });
 
-  // GET: Get User's project board data
-  const userProjectBaordData = (board_id: string, enabled = true) => {
+  // 🔹 GET: Get User's project board data
+  const useUserProjectBoardData = (board_id: string, enabled = true) => {
     return useQuery<ResponseT<UserBoardProjectT>>({
       queryKey: ["userProjectBoardList", board_id],
       queryFn: async () => {
@@ -130,7 +126,7 @@ export const useBoards = () => {
     });
   };
 
-  // PUT: Update List's Position
+  // 🔹 PUT: Update List's Position
   const updateBoardListPosition = useMutation({
     mutationFn: async (payload: UpdateListPositionT) => {
       return await UpdateListPositionApi(payload);
@@ -143,11 +139,11 @@ export const useBoards = () => {
   return {
     createBoardMutation,
     useUserList,
-    addBaordMemberMutation,
-    userBoardList,
+    addBoardMemberMutation,
+    useUserBoardList,
     setUserActiveBoardMutation,
     createBoardListMutation,
-    userProjectBaordData,
+    useUserProjectBoardData,
     updateBoardListPosition,
   };
 };

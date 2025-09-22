@@ -30,10 +30,10 @@ const ProjectsPage = () => {
 
   const {
     createBoardMutation,
-    userBoardList,
+    useUserBoardList,
     setUserActiveBoardMutation,
     createBoardListMutation,
-    userProjectBaordData,
+    useUserProjectBoardData,
     updateBoardListPosition,
   } = useBoards();
 
@@ -44,7 +44,7 @@ const ProjectsPage = () => {
   } = setUserActiveBoardMutation;
 
   const { data: userBoardListData, isLoading: isLoadingUserBoardList } =
-    userBoardList({
+    useUserBoardList({
       page: 1,
       limit: 100,
     });
@@ -55,7 +55,7 @@ const ProjectsPage = () => {
   const { mutateAsync: updateListPositionAction } = updateBoardListPosition;
 
   const { data: userProjectBoardData, isLoading: isLoadingUserProjetBoard } =
-    userProjectBaordData(String(activeBoard?.id), !!activeBoard?.id);
+    useUserProjectBoardData(String(activeBoard?.id), !!activeBoard?.id);
 
   // Sync when server data changes
   useEffect(() => {

@@ -12,7 +12,7 @@ import { SignupInput, signupSchema } from "@/app/schemas/authSchema";
 import { signupAction } from "@/app/actions/auth/authActions";
 import { toast } from "sonner";
 
-const page = () => {
+const Page = () => {
   const {
     register,
     handleSubmit,
@@ -175,4 +175,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
