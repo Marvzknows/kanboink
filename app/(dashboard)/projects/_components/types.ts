@@ -1,3 +1,5 @@
+import { UserT } from "@/utils/types";
+
 export const prioritiesOptions = [
   {
     name: "Low",
@@ -43,4 +45,44 @@ export const taskLists = [
 export type SelectOptionsT = {
   name: string;
   value: string;
+};
+
+export type ListT = {
+  id: string;
+  title: string;
+  boardId: string;
+  position: number;
+  cards: CardT[];
+};
+
+export type CardT = {
+  id: string;
+  title: string;
+  description: string | null;
+  assigneeId: string | null;
+  listId: string;
+  priority: string;
+  createdBy: UserT | null;
+  createdAt: string;
+};
+
+export type ResponseT<T> = {
+  data: T;
+  success: boolean;
+};
+
+export type UserBoardProjectT = {
+  board: {
+    id: string;
+    title: string;
+    owner: UserT;
+    members: UserT[];
+    lists: ListT[];
+  };
+};
+
+export type UpdateListPositionT = {
+  listId: string;
+  newPosition: number;
+  boardId: string;
 };

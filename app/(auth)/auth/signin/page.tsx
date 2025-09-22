@@ -1,15 +1,49 @@
+"use client";
+
 import React from "react";
 import { GalleryVerticalEnd } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { SignInInput, signInSchema } from "@/app/schemas/authSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { signinAction } from "@/app/actions/auth/authActions";
+import { useRouter } from "next/navigation";
 
 const page = () => {
+  const router = useRouter();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInInput>({
+    resolver: zodResolver(signInSchema),
+  });
+
+  const onSubmit = async (data: SignInInput) => {
+    try {
+      const response = await signinAction(data);
+
+      if (response.success) {
+        toast.success(response.message || "Signed in successfully");
+        // Redirect to dashboard or home page
+        router.push("/dashboard");
+      } else {
+        toast.error(response.error || "Sign in failed");
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+    }
+  };
+
   return (
     <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="w-full max-w-sm">
-        <form>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-6">
             <div className="flex flex-col items-center gap-2">
               <div className="flex size-8 items-center justify-center rounded-md">
@@ -31,13 +65,32 @@ const page = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
-                  type="email"
+                  {...register("email")}
                   placeholder="m@example.com"
-                  required
+                  disabled={isSubmitting}
                 />
+                {errors.email?.message && (
+                  <p className="text-red-500 font-semibold text-xs">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
-              <Button type="submit" className="w-full">
-                Login
+              <div className="grid gap-3">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  {...register("password")}
+                  disabled={isSubmitting}
+                />
+                {errors.password?.message && (
+                  <p className="text-red-500 font-semibold text-xs">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+              <Button disabled={isSubmitting} type="submit" className="w-full">
+                {isSubmitting ? "Signing in..." : "Login"}
               </Button>
             </div>
             <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">

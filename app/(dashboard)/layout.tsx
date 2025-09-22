@@ -20,16 +20,50 @@ import { LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ModeToggle } from "@/components/ModeToggle";
+import { useMe } from "../(auth)/_hooks/useMe";
+import { useContext, useEffect } from "react";
+import { AuthContext } from "@/context/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
+import FullPageLoader from "@/components/FullPageLoader";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { data, isFetching, error } = useMe();
+  const { setUserAuth, loadingLogout, logout, setUserActiveBoard } =
+    useContext(AuthContext);
+
+  useEffect(() => {
+    if (data?.data) {
+      setUserAuth({
+        id: data?.data.id,
+        first_name: data?.data.first_name,
+        middle_name: data?.data.middle_name || "",
+        last_name: data?.data.last_name,
+        email: data?.data.email,
+        createdAt: data?.data.createdAt,
+      });
+      setUserActiveBoard(data.data.activeBoard || null);
+    }
+  }, [data, setUserAuth]);
+
+  // Force logout if meApi fails
+  useEffect(() => {
+    if (error) {
+      logout();
+    }
+  }, [error]);
+
   const pathname = usePathname();
 
   // split pathname: "/projects" -> ["projects"]
   const segments = pathname.split("/").filter(Boolean);
+
+  if (isFetching) {
+    return <FullPageLoader />;
+  }
 
   return (
     <SidebarProvider>
@@ -79,7 +113,12 @@ export default function DashboardLayout({
 
           <div className="ml-auto">
             <ModeToggle />
-            <Button className="ml-auto" variant="ghost">
+            <Button
+              disabled={loadingLogout}
+              onClick={() => logout()}
+              className="ml-auto"
+              variant="ghost"
+            >
               <LogOut />
               Logout
             </Button>
@@ -89,6 +128,7 @@ export default function DashboardLayout({
         {/* Page Content */}
         <div className="flex-1 flex flex-col mx-auto w-full">{children}</div>
       </SidebarInset>
+      <Toaster richColors position="top-right" />
     </SidebarProvider>
   );
 }
