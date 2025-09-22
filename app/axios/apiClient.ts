@@ -2,17 +2,17 @@ import type { AxiosRequestConfig } from "axios";
 import axiosInstance from "./axios";
 
 export const apiClient = {
-  get: async (url: string, params?: any) => {
+  get: async (url: string, params?: unknown) => {
     const response = await axiosInstance.get(url, { params });
     return response.data;
   },
 
-  post: async (url: string, payload: any, config?: AxiosRequestConfig) => {
+  post: async (url: string, payload: unknown, config?: AxiosRequestConfig) => {
     const response = await axiosInstance.post(url, payload, config);
     return response.data;
   },
 
-  put: async (url: string, payload: any) => {
+  put: async (url: string, payload: unknown) => {
     const response = await axiosInstance.put(url, payload);
     return response.data;
   },
