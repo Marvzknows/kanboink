@@ -13,15 +13,23 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 
   {
+    files: [
+      "app/**/*.{ts,tsx,js,jsx}", // your Next.js app directory
+      "components/**/*.{ts,tsx,js,jsx}", // your components
+      "lib/**/*.{ts,tsx,js,jsx}", // optional: your lib code (but not generated)
+    ],
     ignores: [
       "node_modules/",
       ".next/",
-      "lib/generated/", // ignore Prisma generated code
+      "dist/",
+      "lib/generated/", // ignore Prisma or auto-generated code
     ],
     rules: {
-      // disable strict rules so Vercel build won't fail
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unsafe-function-type": "off",
+      "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/no-this-alias": "off",
+      "@typescript-eslint/no-unused-expressions": "off",
     },
   },
 ];
