@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -27,19 +27,19 @@ model User {
   refreshTokens RefreshToken[]
   boards        Board[]        @relation("BoardMembers")
 
-  @@index([activeBoardId], map: "User_activeBoardId_fkey")
+  @@index([activeBoardId])
 }
 
 model RefreshToken {
   id        String   @id @default(cuid())
-  token     String   @db.Text
+  token     String
   userId    String
   expiresAt DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId], map: "refresh_tokens_userId_fkey")
+  @@index([userId])
   @@map("refresh_tokens")
 }
 
@@ -55,7 +55,7 @@ model Board {
   User       User[]
   members    User[]        @relation("BoardMembers")
 
-  @@index([ownerId], map: "Board_ownerId_fkey")
+  @@index([ownerId])
 }
 
 model Card {
@@ -74,9 +74,9 @@ model Card {
   list        List         @relation(fields: [listId], references: [id], onDelete: Cascade)
   comments    Comment[]
 
-  @@index([assigneeId], map: "Card_assigneeId_fkey")
-  @@index([createdById], map: "Card_createdById_fkey")
-  @@index([listId], map: "Card_listId_fkey")
+  @@index([assigneeId])
+  @@index([createdById])
+  @@index([listId])
 }
 
 model List {
@@ -89,7 +89,7 @@ model List {
   cards     Card[]
   board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
-  @@index([boardId], map: "List_boardId_fkey")
+  @@index([boardId])
 }
 
 model Comment {
@@ -102,8 +102,8 @@ model Comment {
   card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([cardId], map: "Comment_cardId_fkey")
-  @@index([userId], map: "Comment_userId_fkey")
+  @@index([cardId])
+  @@index([userId])
 }
 
 model ActivityLog {
@@ -117,8 +117,8 @@ model ActivityLog {
   board     Board?         @relation(fields: [boardId], references: [id], onDelete: Cascade)
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([boardId], map: "ActivityLog_boardId_fkey")
-  @@index([userId], map: "ActivityLog_userId_fkey")
+  @@index([boardId])
+  @@index([userId])
 }
 
 enum ActivityAction {
