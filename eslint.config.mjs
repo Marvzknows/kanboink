@@ -30,6 +30,8 @@ const eslintConfig = [
       "@typescript-eslint/no-require-imports": "off",
       "@typescript-eslint/no-this-alias": "off",
       "@typescript-eslint/no-unused-expressions": "off",
+      "@typescript-eslint/no-unnecessary-type-constraint": "off",
+      "@typescript-eslint/ban-types": "off", // this is the rule that warns on `{}` and other banned types
     },
   },
 ];
