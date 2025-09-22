@@ -13,6 +13,11 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 
   {
+    ignores: [
+      "node_modules/",
+      ".next/",
+      "lib/generated/", // ignore Prisma generated code
+    ],
     rules: {
       // disable strict rules so Vercel build won't fail
       "@typescript-eslint/no-explicit-any": "off",
