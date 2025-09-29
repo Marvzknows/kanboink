@@ -14,7 +14,14 @@ import { ActiveBoardT } from "@/app/(auth)/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import BoardList from "./_components/BoardList";
 import BoardListCard from "./_components/BoardListCard";
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragEndEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { ListT } from "./_components/types";
 
@@ -121,6 +128,21 @@ const ProjectsPage = () => {
     }
   };
 
+  // Single sensor that works for mouse + touch
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 5, // desktop drag starts after 5px move
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 100, // must press & hold for 200ms before drag starts
+        tolerance: 5,
+      },
+    })
+  );
+
   const handleDragEnd = async ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
 
@@ -206,7 +228,7 @@ const ProjectsPage = () => {
                 ))}
               </div>
             ) : (
-              <DndContext onDragEnd={handleDragEnd}>
+              <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
                 <SortableContext items={lists.map((list) => list.id)}>
                   {lists.map((list) => (
                     // List
