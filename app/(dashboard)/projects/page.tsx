@@ -44,17 +44,18 @@ const ProjectsPage = () => {
     updateBoardListPosition,
   } = useBoards();
 
+  // #region API's
   const { mutateAsync: createBoardAction, isPending } = createBoardMutation;
   const {
     mutateAsync: setActiveBoardAction,
     isPending: isUpdatingActiveBoard,
   } = setUserActiveBoardMutation;
 
-  const { data: userBoardListData, isLoading: isLoadingUserBoardList } =
-    useUserBoardList({
-      page: 1,
-      limit: 100,
-    });
+  // const { data: userBoardListData, isLoading: isLoadingUserBoardList } =
+  //   useUserBoardList({
+  //     page: 1,
+  //     limit: 100,
+  //   });
 
   const { mutateAsync: createBoardListAction, isPending: isCreatingList } =
     createBoardListMutation;
@@ -63,6 +64,7 @@ const ProjectsPage = () => {
 
   const { data: userProjectBoardData, isLoading: isLoadingUserProjetBoard } =
     useUserProjectBoardData(String(activeBoard?.id), !!activeBoard?.id);
+  //#endregion
 
   // Sync when server data changes
   useEffect(() => {
@@ -172,90 +174,115 @@ const ProjectsPage = () => {
       setLists(lists);
     }
   };
-
   // #endregion
+  const [connectionStatus, setConnectionStatus] = useState("Connecting...");
+  const [messages, setMessages] = useState<String[]>([]);
+
+  useEffect(() => {
+    const eventSource = new EventSource("/api/sse");
+
+    eventSource.onopen = () => {
+      setConnectionStatus("Connected");
+    };
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      setMessages((prev) => [...prev, data.message]);
+    };
+
+    eventSource.onerror = () => {
+      setConnectionStatus("Connecting... (onerror)");
+    };
+  }, []);
 
   return (
-    <div className="p-4 h-full flex flex-col">
-      <SelectProjectTitle
-        projectBoardTitle={
-          !activeBoard?.title ? "Select Project Board" : activeBoard.title
-        }
-        boards={userBoardListData?.data.boards || []}
-        ownerId={user?.id || ""}
-        handleOnSelect={handleOnSelectProjectBoard}
-        isLoading={isUpdatingActiveBoard || isLoadingUserBoardList}
-      />
-      <div className="flex flex-row p-2 gap-2 overflow-x-auto">
-        <div className="flex-1"></div>
-        <div className="flex gap-2 flex-shrink-0">
-          {user?.id === activeBoard?.ownerId && (
-            <>
-              <AddMembersDialog
-                isOpen={openMember}
-                setIsOpen={setOpenMember}
-                active_board={activeBoard}
-              />
-              <AddNewListDialog
-                isOpen={openList}
-                setIsOpen={setOpenList}
-                onSubmit={onSubmitCreateList}
-                title={listTitle}
-                setTitle={setListTitle}
-                isLoading={isCreatingList}
-              />
-            </>
-          )}
-          <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
-          <AddNewProjectDialog
-            isOpen={openProject}
-            setIsOpen={setOpenProject}
-            title={title}
-            setTitle={setTitle}
-            onSubmit={onSubmitProject}
-            isLoading={isPending}
-          />
-        </div>
-      </div>
-      {/* Kanban Board */}
-      <div className="flex-1 min-h-0">
-        <div className="flex gap-1.5 overflow-x-auto h-full pb-2 border p-2.5 shadow">
-          {activeBoard ? (
-            isLoadingUserProjetBoard ? (
-              <div className="flex gap-2 w-full h-full">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="flex-1 h-full rounded-xl" />
-                ))}
-              </div>
-            ) : (
-              <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-                <SortableContext items={lists.map((list) => list.id)}>
-                  {lists.map((list) => (
-                    // List
-                    <BoardList
-                      key={list.id}
-                      titile={list.title}
-                      listId={list.id}
-                    >
-                      {/* Cards */}
-                      {list.cards.map((card) => (
-                        <BoardListCard
-                          key={card.id}
-                          title={card.title}
-                          createdAt={card.createdAt}
-                        />
-                      ))}
-                    </BoardList>
-                  ))}
-                </SortableContext>
-              </DndContext>
-            )
-          ) : (
-            <p className="m-auto">NO BOARD FOUND</p>
-          )}
-        </div>
-      </div>
+    <div className="border border-red-500 p-2 flex flex-col">
+      {messages.map((m, index) => (
+        <p key={index} className="font-bold p-2 border-2 text-xs">
+          {index + 1}.) {m}
+        </p>
+      ))}
     </div>
+    // <div className="p-4 h-full flex flex-col">
+    //   <SelectProjectTitle
+    //     projectBoardTitle={
+    //       !activeBoard?.title ? "Select Project Board" : activeBoard.title
+    //     }
+    //     boards={userBoardListData?.data.boards || []}
+    //     ownerId={user?.id || ""}
+    //     handleOnSelect={handleOnSelectProjectBoard}
+    //     isLoading={isUpdatingActiveBoard || isLoadingUserBoardList}
+    //   />
+    //   <div className="flex flex-row p-2 gap-2 overflow-x-auto">
+    //     <div className="flex-1"></div>
+    //     <div className="flex gap-2 flex-shrink-0">
+    //       {user?.id === activeBoard?.ownerId && (
+    //         <>
+    //           <AddMembersDialog
+    //             isOpen={openMember}
+    //             setIsOpen={setOpenMember}
+    //             active_board={activeBoard}
+    //           />
+    //           <AddNewListDialog
+    //             isOpen={openList}
+    //             setIsOpen={setOpenList}
+    //             onSubmit={onSubmitCreateList}
+    //             title={listTitle}
+    //             setTitle={setListTitle}
+    //             isLoading={isCreatingList}
+    //           />
+    //         </>
+    //       )}
+    //       <AddNewTaskDialog onTaskAdd={handleTaskAdd} />
+    //       <AddNewProjectDialog
+    //         isOpen={openProject}
+    //         setIsOpen={setOpenProject}
+    //         title={title}
+    //         setTitle={setTitle}
+    //         onSubmit={onSubmitProject}
+    //         isLoading={isPending}
+    //       />
+    //     </div>
+    //   </div>
+    //   {/* Kanban Board */}
+    //   <div className="flex-1 min-h-0">
+    //     <div className="flex gap-1.5 overflow-x-auto h-full pb-2 border p-2.5 shadow">
+    //       {activeBoard ? (
+    //         isLoadingUserProjetBoard ? (
+    //           <div className="flex gap-2 w-full h-full">
+    //             {Array.from({ length: 3 }).map((_, i) => (
+    //               <Skeleton key={i} className="flex-1 h-full rounded-xl" />
+    //             ))}
+    //           </div>
+    //         ) : (
+    //           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+    //             <SortableContext items={lists.map((list) => list.id)}>
+    //               {lists.map((list) => (
+    //                 // List
+    //                 <BoardList
+    //                   key={list.id}
+    //                   titile={list.title}
+    //                   listId={list.id}
+    //                 >
+    //                   {/* Cards */}
+    //                   {list.cards.map((card) => (
+    //                     <BoardListCard
+    //                       key={card.id}
+    //                       title={card.title}
+    //                       createdAt={card.createdAt}
+    //                     />
+    //                   ))}
+    //                 </BoardList>
+    //               ))}
+    //             </SortableContext>
+    //           </DndContext>
+    //         )
+    //       ) : (
+    //         <p className="m-auto">NO BOARD FOUND</p>
+    //       )}
+    //     </div>
+    //   </div>
+    // </div>
   );
 };
 
